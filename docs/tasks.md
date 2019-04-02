@@ -1,6 +1,8 @@
 
 - fs-write save in reverse domain order? au.com.google etc?
 
+- optionally write patches as a folder, so the the assets can reference sibling images etc within the folder
+
 # Old instructions
 
 Install Chrome extension [User Javascript & CSS](https://chrome.google.com/webstore/detail/user-javascript-and-css/nbhcbdghjpllgmfilhnhkllmkecfmpld?hl=en) (it's a very dry name, but a well-designed and straightforward extension), which lets you add custom JS / CSS to any page, according to a text-based filter for which pages get which JS / CSS. 

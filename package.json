@@ -5,12 +5,13 @@
   "author": "Tom Kenny <tom@twome.name>",
   "license": "MIT",
   "scripts": {
-    "installpanrepo": "git clone /Users/tome/Dropbox/git/panrepo.git node_modules/@twome/panrepo"
+    "installpanrepo": "git clone /Users/tome/Dropbox/git/panrepo.git node_modules/@twome/panrepo",
+    "postinstall": "git clone /Users/tome/Dropbox/git/panrepo.git node_modules/@twome/panrepo"
   },
-  "devDependencies": {
-    "esm": "^3.2.22"
-  },
+  "devDependencies": {},
   "dependencies": {
+    "esm": "^3.2.22",
+    "koa": "^2.7.0",
     "luxon": "^1.12.0"
   }
 }
