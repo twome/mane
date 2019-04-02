@@ -1,0 +1,16 @@
+{
+  "name": "domain-patches",
+  "version": "1.0.0",
+  "main": "mod.js",
+  "author": "Tom Kenny <tom@twome.name>",
+  "license": "MIT",
+  "scripts": {
+    "installpanrepo": "git clone /Users/tome/Dropbox/git/panrepo.git node_modules/@twome/panrepo"
+  },
+  "devDependencies": {
+    "esm": "^3.2.22"
+  },
+  "dependencies": {
+    "luxon": "^1.12.0"
+  }
+}
