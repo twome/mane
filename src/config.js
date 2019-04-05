@@ -4,7 +4,7 @@ const path = require('path')
 
 export let getConfig = () => {
 	return {
-		port: 7473,
+		port: 1917,
 		routes: {
 			patchesFor: '/patches-for'
 		},
