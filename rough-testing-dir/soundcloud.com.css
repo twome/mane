@@ -1,0 +1,25 @@
+.header__navMenuItem[href="/discover"]{
+  display: none;
+}
+
+.header__proUpsell {
+  display: none;
+}
+
+.statsBadge__upsell {
+  display: none;
+}
+
+a[href^="/pro"] {
+  display: none;
+}
+
+.streamSidebar {
+  opacity: 0.3;
+  transition: opacity 200ms;
+}
+.streamSidebar:hover,
+.streamSidebar:active,
+.streamSidebar:focus {
+  opacity: 1;
+}

@@ -1,0 +1,34 @@
+.domainEmphasis_domain {
+	font-weight: bold;
+	color: hsl(139, 100%, 15%);
+	font-size: 1.15em;
+	margin-right: 0.5em;
+	margin-left: 0.3em;
+}
+.domainEmphasis_protocol {
+  opacity: 0.5;
+}
+.domainEmphasis_nonSecure {
+  color: red;
+  font-weight: bold;
+  opacity: 1;
+}
+
+
+.blockedResult {
+  font-weight: bold;
+  padding: 0.2em 0.4em;
+  background: hsla(0, 100%, 50%, 0.17);
+  color: black;
+  height: auto;
+}
+.blockedResult_preface {
+  font-weight: normal;
+}
+
+.blockedEntireResult {
+  margin-bottom: 1em !important;
+  margin-top: 1em !important;
+  padding-bottom: 0 !important;
+  padding-top: 0 !important;
+}

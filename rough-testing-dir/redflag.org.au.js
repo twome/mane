@@ -1,0 +1,1 @@
+document.getElementById('mce-EMAIL').setAttribute('placeholder', 'your email')

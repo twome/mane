@@ -1,0 +1,45 @@
+/* Popup notification for `switchFeedToMostRecent` so the user knows why the page is seemingly reloading. */
+.userPatch----switchFeedToMostRecentPopupNotification {
+  z-index: 99999;
+  position: fixed;
+  top: 1em;
+  left: 1em;
+  border: 2px solid red;
+  padding: 0.4em;
+  font-size: 22px;
+  font-family: monospace;
+  background-color: white;
+}
+
+
+/* Annoyances */
+#pagelet_trending_tags_and_topics, 
+#pagelet_feed_variety, 
+#pagelet_ego_pane { 
+    display: none;
+}
+
+/* Apps/sub-pages sidebar */
+.sideNavItem[data-nav-item-id="2392950137"],  /* Watch */
+.sideNavItem[data-nav-item-id="140332009231"],  /* Games */
+.sideNavItem[data-nav-item-id="193356651002223"],  /* Fundraisers */
+.sideNavItem[data-nav-item-id="303257506544370"],  /* Memories */
+.sideNavItem[data-nav-item-id="1517832211847102"],  /* Oculus */
+.sideNavItem[data-nav-item-id="280033845760645"],  /* Recent ads */
+.sideNavItem[data-nav-item-id="765518473459969"],  /* Crisis */
+.sideNavItem[data-nav-item-id="302677536798470"],  /* Weather */
+.sideNavItem[data-nav-item-id="977114232337111"],  /* Jobs */
+.sideNavItem[data-nav-item-id="232826340638308"],  /* Month with friends */
+.sideNavItem[data-nav-item-id="285571681929755"],  /* Gaming video */
+.sideNavItem[data-nav-item-id="526732794016279"],  /* Offers */
+.sideNavItem[data-nav-item-id="577076605805053"],  /* Recommendations */
+.sideNavItem[data-nav-item-id="645191315628772"],  /* Discover people */
+.sideNavItem[data-nav-item-id="156203961126022"]  /* Welcome */
+{
+	display: none;
+}
+
+/* Right-hand sidebar */
+.pagelet[data-referrer="stories_pagelet_rhc"] {
+  
+}

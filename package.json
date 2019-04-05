@@ -1,17 +1,26 @@
 {
   "name": "domain-patches",
   "version": "1.0.0",
-  "main": "mod.js",
+  "main": "dist/server.js",
   "author": "Tom Kenny <tom@twome.name>",
   "license": "MIT",
   "scripts": {
-    "installpanrepo": "git clone /Users/tome/Dropbox/git/panrepo.git node_modules/@twome/panrepo",
-    "postinstall": "git clone /Users/tome/Dropbox/git/panrepo.git node_modules/@twome/panrepo"
+    "postinstall": "git clone /Users/tome/Dropbox/git/panrepo.git node_modules/@twome/panrepo",
+    "build": "node -r esm build.js",
+    "prod": "NODE_ENV=production node -r esm build.js",
+    "mon": "nodemon -r esm -w src/server.js src/server.js"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "parcel-bundler": "^1.12.3"
+  },
   "dependencies": {
+    "escape-string-regexp": "^1.0.5",
     "esm": "^3.2.22",
+    "express": "^4.16.4",
+    "fast-glob": "^2.2.6",
     "koa": "^2.7.0",
-    "luxon": "^1.12.0"
+    "lodash-es": "^4.17.11",
+    "luxon": "^1.12.0",
+    "typescript": "^3.4.1"
   }
 }

@@ -1,0 +1,8 @@
+/* "Share" widget */
+button[data-action-source="post_share_widget"] {
+	display: none;
+}
+
+.js-postLeftSidebar, .js-postShareWidget {
+  display: none !important;
+}

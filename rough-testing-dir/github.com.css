@@ -1,0 +1,13 @@
+.avatar.width-full {
+    height: auto;
+    width: 5em !important;
+}
+
+.HeaderNavlink[href*="/marketplace"],
+.HeaderNavlink[href*="/explore"]{
+  display: none;
+}
+
+pre, code, tr, p {
+  tab-size: 2;
+}

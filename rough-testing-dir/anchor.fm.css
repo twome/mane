@@ -1,0 +1,32 @@
+.EasyLinksContainer {
+  position: fixed;
+  top: 1em;
+  left: 1em;
+  background-color: white;
+  color: #222;
+  padding: 1em;
+  height: auto;
+}
+
+.EasyLinksContainer_closeBtn {
+  border: 1px solid black;
+  margin-top: 1em;
+  cursor: pointer;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+}
+.EasyLinksContainer_closeBtn:hover {
+  background-color: hsl(0, 100%, 90%);
+}
+
+.EasyAudioLink {
+  
+}
+.EasyAudioLink a {
+  color: blue;
+  display: block;
+}
+.EasyAudioLink_copyText {
+  display: block;
+  width: 100%;
+}

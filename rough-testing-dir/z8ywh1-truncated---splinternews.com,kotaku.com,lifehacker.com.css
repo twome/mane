@@ -1,0 +1,16 @@
+/* patch-urls splinternews.com,kotaku.com,lifehacker.com,gizmodo.com,deadspin.com,jezebel.com,jalopnik.com,theavclub.com */
+.main {
+    margin: 0 auto;
+    max-width: 60em;
+    width: auto;
+    
+    font-family: sans-serif;
+}
+
+.top-stories-container,
+.article-trending,
+.site-footer,
+.site-header,
+.sidebar {
+	display: none;
+}

@@ -1,0 +1,20 @@
+/* patch-urls *.stackexchange.com,stackoverflow.com,superuser.com,askubuntu.com */
+/* These are all effectively just ads with capitalist motivations. */
+#hot-network-questions,
+#newsletter-ad,
+.community-bulletin,
+.left-sidebar {
+    display: none;
+}
+
+/* Left-border was intended to separate now-missing sidebar. */
+#content {
+  border-left-width: 0 !important;
+}
+
+/* Original colouring too intense for what it's representing and distracts from main content reading. !i needed to overcome high specificity. */
+.sidebar-related .answered-accepted {
+    background-color: #e6ffc7 !important;
+    color: #222 !important;
+}
+

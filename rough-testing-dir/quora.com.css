@@ -1,0 +1,107 @@
+.advertisement {
+	display: none;
+	visibility: none;
+}
+
+.NewGridQuestionPage .AnswerBase {
+	padding-top: 0.5em;
+	padding-left: 1em;
+	padding-right:1em;
+	padding-bottom: 0.5em;
+	margin-bottom: 0.6em;
+}
+
+.BelowQuestionAddPrompt {
+	display: none;
+}
+
+.Answer {
+    background-color: hsla(0,0%,98%,1);
+    border: 1px solid hsla(0,0%,0%,0.25);
+    border-radius: 5px;
+    margin-bottom: 2em;
+    padding-bottom: 1em;
+    padding-left: 1em;
+    padding-right: 1em;
+    padding-top: 1em;
+}
+
+.AnswerFooter > .bullet {
+    display: none;
+}
+
+.AnswerFooter > span:first-child {
+    display: none;
+}
+
+.AnswerHeader {
+    margin-bottom: 1em;
+}
+
+.ContentPageFeed {
+    display: none;
+}
+
+.ContentWrapper {
+    margin-top: 1em;
+    padding-top: 0;
+}
+
+.CredibilityFacts {
+    margin-top: 0.5em;
+    font-size: 0.7rem;
+		color: hsla(0,0%,0%,0.5);
+}
+
+.IdentityNameCredential {
+    color: hsla(0,0%,0%,0.4);
+    font-style: italic;
+}
+
+.QuestionArea, .header {
+    margin-bottom: 0em;
+}
+
+.SiteHeader {
+    display: none;
+}
+
+._layout_photo_wrapper {
+    display: none;
+}
+
+._layout_text_wrapper {
+    padding-left: 0;
+}
+
+.answer_count {
+    font-size: 1rem;
+}
+
+.answer_permalink {
+    background-color: hsla(50,80%,96%,1);
+    border: 1px solid hsla(50,60%,70%,1);
+    border-radius: 999px;
+    color: #222;
+    font-size: 1.1em;
+    font-weight: bold;
+    padding: 0.2em 0.5em;
+    vertical-align: middle;
+}
+
+.layout_2col_main {
+    width: 100%;
+}
+
+.logged_out_related_questions_container {
+    display: none;
+}
+
+.question_related {
+    display: none;
+}
+
+.user {
+    color: #888;
+    font-weight: bold;
+}
