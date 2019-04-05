@@ -10,7 +10,7 @@ export let getConfig = () => {
 		},
 		accomodatingUrlMatching: true,
 		recentUrlsHistoryLength: 500,
-		storageDir: path.join(process.cwd(), '/rough-testing-dir/'), //DateTime.local().toISO())
+		storageDir: path.join(process.cwd(), '/patches/'), //DateTime.local().toISO())
 		excessLengthIndicator: '-truncated---',
 		specialCommentToken: 'patch-urls',
 		fsCacheDir: '.cache',

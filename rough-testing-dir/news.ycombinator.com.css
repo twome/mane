@@ -1,4 +1,0 @@
-td.ind {
-  /* Show indent level (40px interval) */
-  background-image: repeating-linear-gradient(90deg, transparent 0px, hsla(0,0%,0%,0.2) 1px, transparent 1px, transparent 40px);
-}

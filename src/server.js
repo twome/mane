@@ -12,11 +12,9 @@ const fs = require('fs')
 const path = require('path')
 const util = require('util')
 
-const readFile = util.promisify(fs.readFile)
-
 const escapeStringRegexp = require('escape-string-regexp')
-import isEqual from '../node_modules/lodash-es/isEqual.js'
 const express = require('express')
+import cloneDeep from '../node_modules/lodash-es/cloneDeep.js'
 
 import { Patch } from './patch.js'
 import { 
@@ -26,7 +24,7 @@ import {
 	getMatchListFromFile,
 	getPatchAssetBodies 
 } from './files.js'
-import { getMatchListPreview } from './util.js'
+import { getMatchListTruncated } from './util.js'
 import { getConfig } from './config.js'
 
 // Options
@@ -75,7 +73,7 @@ const findMatchingPatchesForUrl = async (url, forceRefresh) => {
 		return patch.matchList.some(matcher => testMatcherAgainstUrl(url, matcher, config.accomodatingUrlMatching))
 	})
 	
-	matchingPatches = getPatchAssetBodies(matchingPatches)
+	matchingPatches = await getPatchAssetBodies(matchingPatches)
 
 	// Cache search result for this specific query / url
 	cache.recentUrlsHistory.set(url, matchingPatches)
@@ -87,13 +85,22 @@ const findMatchingPatchesForUrl = async (url, forceRefresh) => {
 
 const makeServer = () => {
 	let server = express()
+	
 	server.get(config.routes.patchesFor + '/:urlToPatch', (req, res, next) => {
 		console.debug('incoming url to look for patches for!!!', req.url)
+		
 		let urlToPatch = decodeURIComponent(req.params.urlToPatch)
 		console.debug({urlToPatch})
+
 		findMatchingPatchesForUrl(urlToPatch).then(patchArr => {
+			patchArr = cloneDeep(patchArr) // Copy before customising the response
+
 			console.debug('query object', req.query)
-			if (req.query['no-body'] === 'yes-please'){
+
+			// ~ map of validating query commands/values 
+
+			if (req.query['include-body'] === 'false'){
+
 				patchArr = patchArr.map(patch => {
 					delete patch.js
 					delete patch.css
@@ -103,6 +110,7 @@ const makeServer = () => {
 			res.json(patchArr)
 		})
 	})
+
 	return server
 }
 

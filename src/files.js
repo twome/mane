@@ -9,8 +9,9 @@ const readDir = util.promisify(fs.readdir)
 
 const { DateTime } = require('luxon')
 import last from '../node_modules/lodash-es/last.js'
+import isEqual from '../node_modules/lodash-es/isEqual.js'
 
-import { getRandomId, getMatchListPreview } from './util.js'
+import { getRandomId, getMatchListTruncated } from './util.js'
 import { getConfig } from './config.js'
 import { Patch } from './patch.js'
 
@@ -81,31 +82,26 @@ export let importPatchJson = async (url, scheme)=>{
 
 
 export let savePatchToFS = async (patch, storageDir, maxFilenameSize = 60) => {
+	let concatenated = patch.matchList.join(',')
+	let patchName = concatenated
 	
-	let patchName = patch.matchList[0]
-
-	if (patch.matchList.length >= 2){
-		let concatenated = patch.matchList.join(',')
+	if (concatenated.length >= maxFilenameSize){ 
+		let idShort = patch.id.substr(0, 6)
+		let previewLength = maxFilenameSize - config.excessLengthIndicator.length - idShort.length
+		let truncated = getMatchListTruncated(patch.matchList, previewLength)
 		
-		if (concatenated.length >= maxFilenameSize){ 
-			if (!patch.id) patch.id = getRandomId(20)
-			let idShort = patch.id.substr(0, 6)
-			let previewLength = maxFilenameSize - config.excessLengthIndicator.length - idShort.length
-			let preview = getMatchListPreview(patch.matchList, previewLength)
-			
-			patchName = idShort + config.excessLengthIndicator + preview 
+		patchName = idShort + config.excessLengthIndicator + truncated 
 
-			if (patch.js) patch.js = `/* patch-urls ${concatenated} */\n` + patch.js
-			if (patch.css) patch.css = `/* patch-urls ${concatenated} */\n` + patch.css
-		}
+		if (patch.js) patch.js = `/* patch-urls ${concatenated} */\n` + patch.js
+		if (patch.css) patch.css = `/* patch-urls ${concatenated} */\n` + patch.css
 	}
 	
 	let jsName = patchName + '.js'
 	let cssName = patchName + '.css'
 
 	await makeDir(config.storageDir, { recursive: true })
-	let jsWrite = patch.js ? writeFile(path.join(config.storageDir, jsName), patch.js) : false
-	let cssWrite = patch.css ? writeFile(path.join(config.storageDir, cssName), patch.css) : false
+	let jsWrite = patch.js ? writeFile(path.join(config.storageDir, jsName), patch.js) : Promise.resolve(false)
+	let cssWrite = patch.css ? writeFile(path.join(config.storageDir, cssName), patch.css) : Promise.resolve(false)
 	
 	return await Promise.all([jsWrite, cssWrite])
 }
@@ -114,16 +110,19 @@ export let savePatchToFS = async (patch, storageDir, maxFilenameSize = 60) => {
 export const getMatchListFromFile = async (path) => {
 	// We have to look inside the file for the full matchList, as the filename was too large to hold it.
 	// TODO: stream-read only the first few lines to dramatically reduce FS i/o bottleneck
-	let fileBody = await readFile(path)
+	let fileBody = await readFile(path, 'utf-8')
+
 	let first3lines = fileBody.split('\n').slice(0, 2) // Only check the first 3 lines
-	
+	console.debug({first3lines})
 	// Look for special comment containing the matchList
-	let match = first3lines.match(/\/\*\s*patch-urls\s*([^\s]*)\s*\*\//)
-	if (match){ 
-		return match[1] // The matchlist itself
-	} else {
-		return Error('Expected a special comment in this format: /* patch-urls <comma-separated list of domain regexes> */')
+	let simpleMatch = first3lines.some(line => line.match(/patch-urls/))
+	console.debug({simpleMatch})
+	for (let line of first3lines){
+		let match = line.match(/\/\*\s*patch-urls\s*([^\s]*)\s*\*\//)
+		if (match) return match[1] // The matchlist itself (regex'd group 1)
 	}
+
+	return Error('Expected a special comment in this format: /* patch-urls <comma-separated list of domain regexes> */')
 }
 
 const patchArrToMap = patchesArr => new Map(patchesArr.map(patch => [patch.id, patch]))
@@ -180,13 +179,15 @@ export const getAllPatches = async (memCache, forceRefresh) => {
 		
 		let filenames = await readDir(config.storageDir)
 
-		console.debug('getAllPatches: filenames', filenames)
+		// console.debug('getAllPatches: filenames', filenames)
 		
 		let matchListsOnly = []
 		for (let name of filenames){
 			if (name.match(config.excessLengthIndicator)){ // We had to save this file with an ID + indicator string instead of the literal stringified matchList
+				console.debug('found exceeding file', name)
 				// Go inside the file and look for the special comment
 				let listStr = getMatchListFromFile(path.join(config.storageDir, name))
+				console.debug({listStr: await listStr})
 				matchListsOnly.push(listStr)
 			} else {
 				// Just use the filename
@@ -194,7 +195,7 @@ export const getAllPatches = async (memCache, forceRefresh) => {
 			}
 		}
 		matchListsOnly = await Promise.all(matchListsOnly) // Replace promises with values
-
+		console.debug({matchListsOnly})
 		filenames.forEach((name, index) => {
 			let correspondingMatchList = matchListsOnly[index].trim().split(',') // String ID to matchers array
 			let plainObject = {

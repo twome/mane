@@ -11,14 +11,14 @@ export let getRandomId = (idLength) => {
 }
 
 
-export let getMatchListPreview = (matchList, charLimit) => {
+export let getMatchListTruncated = (matchList, charLimit) => {
 	matchList = [...matchList] // Clone to prevent mutation
-	let preview = ''
-	while (preview.length <= charLimit){
+	let truncated = ''
+	while (truncated.length <= charLimit){
 		let first = matchList.shift()
 		if (first.length + 1 <= charLimit){
-			preview = preview + first + ','
+			truncated = truncated + first + ','
 		}
 	}
-	return preview.substr(0, preview.length - 1) // Cut trailing comma
+	return truncated.substr(0, truncated.length - 1) // Cut trailing comma
 }
