@@ -8,10 +8,9 @@ const makeDir = util.promisify(fs.mkdir)
 const readDir = util.promisify(fs.readdir)
 
 const { DateTime } = require('luxon')
-import last from '../node_modules/lodash-es/last.js'
-import isEqual from '../node_modules/lodash-es/isEqual.js'
+import last from '../../node_modules/lodash-es/last.js'
+// import isEqual from '../../node_modules/lodash-es/isEqual.js'
 
-import { getRandomId, getMatchListTruncated } from './util.js'
 import { getConfig } from './config.js'
 import { Patch } from './patch.js'
 
@@ -81,27 +80,15 @@ export let importPatchJson = async (url, scheme)=>{
 }
 
 
-export let savePatchToFS = async (patch, storageDir, maxFilenameSize = 60) => {
-	let concatenated = patch.matchList.join(',')
-	let patchName = concatenated
+export let savePatchToFS = async (patch, storageDir = config.storageDir) => {
+	let filename = patch.id // This is the same as the concat'd matchList for small matchLists
 	
-	if (concatenated.length >= maxFilenameSize){ 
-		let idShort = patch.id.substr(0, 6)
-		let previewLength = maxFilenameSize - config.excessLengthIndicator.length - idShort.length
-		let truncated = getMatchListTruncated(patch.matchList, previewLength)
-		
-		patchName = idShort + config.excessLengthIndicator + truncated 
-
-		if (patch.js) patch.js = `/* patch-urls ${concatenated} */\n` + patch.js
-		if (patch.css) patch.css = `/* patch-urls ${concatenated} */\n` + patch.css
-	}
-	
-	let jsName = patchName + '.js'
-	let cssName = patchName + '.css'
+	let jsPath = path.join(storageDir, filename + '.js')
+	let cssPath = path.join(storageDir, filename + '.css')
 
 	await makeDir(config.storageDir, { recursive: true })
-	let jsWrite = patch.js ? writeFile(path.join(config.storageDir, jsName), patch.js) : Promise.resolve(false)
-	let cssWrite = patch.css ? writeFile(path.join(config.storageDir, cssName), patch.css) : Promise.resolve(false)
+	let jsWrite = patch.js ? writeFile(jsPath, patch.js) : Promise.resolve(false)
+	let cssWrite = patch.css ? writeFile(cssPath, patch.css) : Promise.resolve(false)
 	
 	return await Promise.all([jsWrite, cssWrite])
 }
@@ -130,6 +117,7 @@ export const updateMemCache = (patches, cache) => {
 	// Renew mem cache
 	cache.patches = patchesAsMap 
 	cache.lastFsWrotePatches = DateTime.local().toISO()
+	cache.valid = true
 }
 
 
@@ -167,17 +155,18 @@ export const getPatchesFromDir = async (dirPath = config.storageDir) => {
 	let fileData = []
 	for (let name of filenames){
 		let file = new Promise(async (res, rej)=>{
-			if (name.match(config.excessLengthIndicator)){ // We had to save this file with an ID + indicator string instead of the literal stringified matchList
-				// console.debug('Found exceeding filename:', name)
-				// Go inside the file and look for the special comment
-				let matchListStr = await getMatchListFromFile(path.join(dirPath, name))
+			let matchListStr, id
+			if (name.match(config.excessLengthIndicator)){ 
+				// In the past, this file had to be saved with a randomly-generated ID + indicator string instead of the literal stringified matchList
 
-				res({name, matchListStr, id: name})
+				// Go inside the file and look for the special comment
+				matchListStr = await getMatchListFromFile(path.join(dirPath, name))
 			} else {
-				// Just use the filename as the matchList and ID
-				let matchListStr = name.replace(/\.(css|js)\s*$/, '')
-				res({name, matchListStr, id: matchListStr})
+				// The filename already is the matchList
+				matchListStr = name.replace(/\.(css|js)\s*$/, '')
 			}
+			id = name.replace(/\.(css|js)\s*$/, '') // Remove file extension and use the filename as ID
+			res({name, matchListStr, id})
 		})
 		fileData.push(file)
 	}
@@ -186,10 +175,9 @@ export const getPatchesFromDir = async (dirPath = config.storageDir) => {
 	let patches = new Map()
 	let files = await Promise.all(fileData)
 	files.forEach(file => {
-		console.debug({file})
 		file.matchList = file.matchListStr.trim().split(',') // String ID to matchers array
 
-		let extantPatch = patches.get(file.id) || new Patch(file) // Re-use the same patch made from a different asset file with the same ID
+		let extantPatch = patches.get(file.id) || new Patch(file) // Re-use the same patch made from a different asset file with the same ID, if needed
 	
 		let fileExtension = last(file.name.split('.'))
 		if (fileExtension === 'js') extantPatch.addAsset(config.assetTypes.Js, path.join(dirPath, file.name))

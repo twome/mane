@@ -1,37 +1,23 @@
-/*
-	Mane
-
-	A Node + WebExtension app that automatically inserts your custom JavaScript and CSS files, stored on your hard drive or a remote Git repository, into web pages to customise them - fix bugs, improve the visual design, remove ads - whatever you want! 
-
-	It also allows you to easily share and use public community "patches", so everyone can easily benefit from one person's customisations. 
-
-	This is similar in approach to GreaseMonkey on Firefox, and User Javascript & CSS on Chrome, but with an emphasis on editing and storing the patches in whatever way suits you, instead of in a custom editor and locked into a single browser extension's database.
-*/
-
-const fs = require('fs')
 const path = require('path')
-const util = require('util')
 
 const escapeStringRegexp = require('escape-string-regexp')
 const express = require('express')
-import cloneDeep from '../node_modules/lodash-es/cloneDeep.js'
+import cloneDeep from '../../node_modules/lodash-es/cloneDeep.js'
 
 import { Patch } from './patch.js'
 import { 
 	getAllPatches,
 	importPatchJson,
 	savePatchToFS,
-	getMatchListFromFile,
 	getPatchAssetBodies 
 } from './files.js'
-import { getMatchListTruncated } from './util.js'
 import { getConfig } from './config.js'
 
 // Options
 const config = getConfig()
 
 const paths = {
-	projectRoot: path.join(__dirname, '..')
+	projectRoot: path.join(__dirname, '..', '..')
 }
 
 // State
@@ -133,9 +119,10 @@ importPatchJson(storedTestingJsonPath, config.patchJsonSchema.UserJavascriptAndC
 	.then(patchArr => {
 
 		cache.patches = [...cache.patches, ...patchArr] // Store whole thing into memory
-		console.info(`Imported and saved: ${patchArr.map(patch => patch.matchList)}`)
+		console.info(`Imported: ${patchArr.map(patch => patch.matchList)}`)
 
-		let saves = patchArr.map(patch => savePatchToFS(patch, config.storageDir))
+		// let saves = patchArr.map(patch => savePatchToFS(patch, config.storageDir))
+		let saves = patchArr
 		Promise.all(saves).then(() => {
 			getAllPatches(cache, true).then(async () => {
 
@@ -153,7 +140,6 @@ importPatchJson(storedTestingJsonPath, config.patchJsonSchema.UserJavascriptAndC
 				await findMatchingPatchesForUrl('news.ycombinator.com')
 				await findMatchingPatchesForUrl('ycombinator.com')
 
-				
 			})
 
 		})
@@ -174,4 +160,4 @@ importPatchJson(storedTestingJsonPath, config.patchJsonSchema.UserJavascriptAndC
 	.catch(err => {
 		console.debug('WHOOPSIES')
 		console.error(err)
-	})  
+	})

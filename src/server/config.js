@@ -1,6 +1,6 @@
 const path = require('path')
 
-// import Enum from '../node_modules/@twome/panrepo/enum.js'
+// import Enum from '../../node_modules/@twome/panrepo/enum.js'
 
 export let getConfig = () => {
 	return {

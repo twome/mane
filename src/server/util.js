@@ -11,7 +11,7 @@ export let getRandomId = (idLength) => {
 }
 
 
-export let getMatchListTruncated = (matchList, charLimit) => {
+export let truncateMatchList = (matchList, charLimit) => {
 	matchList = [...matchList] // Clone to prevent mutation
 	let truncated = ''
 	while (truncated.length <= charLimit){

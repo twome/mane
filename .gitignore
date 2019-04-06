@@ -6,3 +6,6 @@ json-backups/
 dist/
 .cache/
 .tmp/
+
+# Temporary/development
+ignored/
