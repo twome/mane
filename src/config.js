@@ -15,10 +15,16 @@ export let getConfig = () => {
 		specialCommentToken: 'patch-urls',
 		fsCacheDir: '.cache',
 		fsCacheMatchListsFilename: 'fs-cache-matchlists.json',
+
+		// Enums
 		// patchJsonSchema: new Enum(['UserJavascriptAndCSS', 'Mane'])
 		patchJsonSchema: {
 			UserJavascriptAndCSS: 1,
 			Mane: 2
+		},
+		assetTypes: {
+			Js: 1,
+			Css: 2
 		}
 	}
 }

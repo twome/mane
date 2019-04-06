@@ -113,10 +113,7 @@ export const getMatchListFromFile = async (path) => {
 	let fileBody = await readFile(path, 'utf-8')
 
 	let first3lines = fileBody.split('\n').slice(0, 2) // Only check the first 3 lines
-	console.debug({first3lines})
 	// Look for special comment containing the matchList
-	let simpleMatch = first3lines.some(line => line.match(/patch-urls/))
-	console.debug({simpleMatch})
 	for (let line of first3lines){
 		let match = line.match(/\/\*\s*patch-urls\s*([^\s]*)\s*\*\//)
 		if (match) return match[1] // The matchlist itself (regex'd group 1)
@@ -151,69 +148,82 @@ export const updateFSCache = async (patches, cachePath) => {
 	return await writeFile(path, JSON.stringify(forFsCacheObject)) 
 }
 
+export const getFsCache = async ({
+	cachePath = path.join(config.storageDir, config.fsCacheDir, config.fsCacheMatchListsFilename),
+	memCache
+}={}) => {
+	let previousFsCache = await readFile(cachePath)
+	let previousFsCacheJson = JSON.parse(previousFsCache)
+	
+	if (memCache) memCache.lastFsWrotePatches = DateTime.fromISO(previousFsCacheJson.dateWritten)
+	
+	return previousFsCacheJson
+}
+
+export const getPatchesFromDir = async (dirPath = config.storageDir) => {
+	let filenames = await readDir(dirPath)
+	console.debug('getPatchesFromDir: filenames', filenames)
+	
+	let fileData = []
+	for (let name of filenames){
+		let file = new Promise(async (res, rej)=>{
+			if (name.match(config.excessLengthIndicator)){ // We had to save this file with an ID + indicator string instead of the literal stringified matchList
+				// console.debug('Found exceeding filename:', name)
+				// Go inside the file and look for the special comment
+				let matchListStr = await getMatchListFromFile(path.join(dirPath, name))
+
+				res({name, matchListStr, id: name})
+			} else {
+				// Just use the filename as the matchList and ID
+				let matchListStr = name.replace(/\.(css|js)\s*$/, '')
+				res({name, matchListStr, id: matchListStr})
+			}
+		})
+		fileData.push(file)
+	}
+
+	// TODO: use reduce
+	let patches = new Map()
+	let files = await Promise.all(fileData)
+	files.forEach(file => {
+		console.debug({file})
+		file.matchList = file.matchListStr.trim().split(',') // String ID to matchers array
+
+		let extantPatch = patches.get(file.id) || new Patch(file) // Re-use the same patch made from a different asset file with the same ID
+	
+		let fileExtension = last(file.name.split('.'))
+		if (fileExtension === 'js') extantPatch.addAsset(config.assetTypes.Js, path.join(dirPath, file.name))
+		if (fileExtension === 'css') extantPatch.addAsset(config.assetTypes.Css, path.join(dirPath, file.name))
+		patches.set(extantPatch.id, extantPatch)
+	})
+
+	return patches
+}
 
 export const getAllPatches = async (memCache, forceRefresh) => {
 	// TODO: Comparing cache contents (rather than mere existence) to determine whether the next stage of caching is necessary
 
 	// Check mem cache
 	if (memCache.patches.length && !forceRefresh){
-		console.debug('Hit mem cache')
+		console.debug('getAllPatches: Hit & using mem cache for entire patches list')
 		return Object.values(memCache.patches)
 	}
 
 	let foundPatches = []
 	// Read FS cache
 	try {
-		let fsCachePath = path.join(config.storageDir, config.fsCacheDir, config.fsCacheMatchListsFilename)
-		let previousFsCache = await readFile(fsCachePath)	
-		let previousFsCacheJson = JSON.parse(previousFsCache)
+		let previousFsCacheJson = await getFsCache({memCache})
+		console.debug('Found the FS cache file; reading that to find all patches.')
 		
+		// Instatiate all the JSON-ified plain objects into instances in memory
 		previousFsCacheJson.patches.forEach((plainObject) => {
 			foundPatches.push(new Patch(plainObject))
 		})
-
-		memCache.lastFsWrotePatches = DateTime.fromISO(previousFsCacheJson.dateWritten)
 	} catch (err){
 		// No extant FS cache file; instead, we must read dir contents
-		console.warn('No FS cache file found; reading dir contents.')
+		console.warn('No FS cache file found; reading entire dir contents.')
 		
-		let filenames = await readDir(config.storageDir)
-
-		// console.debug('getAllPatches: filenames', filenames)
-		
-		let matchListsOnly = []
-		for (let name of filenames){
-			if (name.match(config.excessLengthIndicator)){ // We had to save this file with an ID + indicator string instead of the literal stringified matchList
-				console.debug('found exceeding file', name)
-				// Go inside the file and look for the special comment
-				let listStr = getMatchListFromFile(path.join(config.storageDir, name))
-				console.debug({listStr: await listStr})
-				matchListsOnly.push(listStr)
-			} else {
-				// Just use the filename
-				matchListsOnly.push(Promise.resolve(name))
-			}
-		}
-		matchListsOnly = await Promise.all(matchListsOnly) // Replace promises with values
-		console.debug({matchListsOnly})
-		filenames.forEach((name, index) => {
-			let correspondingMatchList = matchListsOnly[index].trim().split(',') // String ID to matchers array
-			let plainObject = {
-				matchList: correspondingMatchList
-			}
-			let extension = last(name.split('.'))
-			if (extension === 'js') plainObject.pathJs = name
-			if (extension === 'css') plainObject.pathcss = name
-
-			// Relies on both being in same index order
-			foundPatches.push(new Patch(plainObject))
-		})
-
-		// Add IDs
-		foundPatches = foundPatches.map(patch => {
-			if (!patch.id) patch.id = patch.matchList.join(',').trim()
-			return patch
-		})
+		foundPatches = await getPatchesFromDir()
 	}	
 
 	return foundPatches

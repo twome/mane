@@ -36,6 +36,7 @@ const paths = {
 
 // State
 let cache = {
+	valid: false, // Whether we need to restore the cache or not
 	patches: new Map(),
 	lastFsReadPatches: null, /* DateTime */
 	lastFsWrotePatches: null, /* DateTime */
@@ -60,16 +61,21 @@ const testMatcherAgainstUrl = (url, matcher, stripOutsidePeriods)=>{
 
 const findMatchingPatchesForUrl = async (url, forceRefresh) => {
 	// Check memory cache for this exact url (for refreshes, duplicate tabs, history navigation etc)
+	// console.debug(cache.recentUrlsHistory)
+
 	let fromRecentUrls = cache.recentUrlsHistory.get(url)
 	if (fromRecentUrls){
-		console.debug('hit fromRecentUrls cache')
+		console.debug('findMatchingPatchesForUrl: hit from fromRecentUrls cache', url)
 		return fromRecentUrls // If we've added any new patches, we should have refilled this cache
 	}
 
-	let freshPatches = await getAllPatches(cache, forceRefresh)
+	// console.debug({before: cache})
+
+
+	let patchesToSearch = await getAllPatches(cache, forceRefresh)
 	// Check memory cache of all matchers
 
-	let matchingPatches = freshPatches.filter(patch => {
+	let matchingPatches = patchesToSearch.filter(patch => {
 		return patch.matchList.some(matcher => testMatcherAgainstUrl(url, matcher, config.accomodatingUrlMatching))
 	})
 	
@@ -77,6 +83,8 @@ const findMatchingPatchesForUrl = async (url, forceRefresh) => {
 
 	// Cache search result for this specific query / url
 	cache.recentUrlsHistory.set(url, matchingPatches)
+
+	// console.debug({after: cache})
 
 	console.debug(`matching patches for url "${url}":`, matchingPatches.map(patch => patch.matchList))
 
@@ -87,15 +95,15 @@ const makeServer = () => {
 	let server = express()
 	
 	server.get(config.routes.patchesFor + '/:urlToPatch', (req, res, next) => {
-		console.debug('incoming url to look for patches for!!!', req.url)
+		console.info('Extension requested patches for url:', req.url)
 		
 		let urlToPatch = decodeURIComponent(req.params.urlToPatch)
-		console.debug({urlToPatch})
+		// console.debug({urlToPatch})
 
 		findMatchingPatchesForUrl(urlToPatch).then(patchArr => {
 			patchArr = cloneDeep(patchArr) // Copy before customising the response
 
-			console.debug('query object', req.query)
+			console.debug('Query object:', req.query)
 
 			// ~ map of validating query commands/values 
 
@@ -129,20 +137,21 @@ importPatchJson(storedTestingJsonPath, config.patchJsonSchema.UserJavascriptAndC
 
 		let saves = patchArr.map(patch => savePatchToFS(patch, config.storageDir))
 		Promise.all(saves).then(() => {
-			getAllPatches(cache, true).then(() => {
+			getAllPatches(cache, true).then(async () => {
 
-				findMatchingPatchesForUrl('www.facebook.com')
-				findMatchingPatchesForUrl('google')
-				findMatchingPatchesForUrl('https://www.youtube')
-				findMatchingPatchesForUrl('reddit.com')
-				findMatchingPatchesForUrl('libsyn.com')
-				findMatchingPatchesForUrl('books.libsyn.com')
-				findMatchingPatchesForUrl('grievousbodilycalm.bandcamp.com')
-				findMatchingPatchesForUrl('bandcamp.com')
-				findMatchingPatchesForUrl('medium.freecodecamp.org')
-				findMatchingPatchesForUrl('jalopnik.com/some-bourgeois-nonsense')
-				findMatchingPatchesForUrl('news.ycombinator.com')
-				findMatchingPatchesForUrl('ycombinator.com')
+				await findMatchingPatchesForUrl('www.facebook.com')
+				await findMatchingPatchesForUrl('www.facebook.com')
+				await findMatchingPatchesForUrl('google')
+				await findMatchingPatchesForUrl('https://www.youtube')
+				await findMatchingPatchesForUrl('reddit.com')
+				await findMatchingPatchesForUrl('libsyn.com')
+				await findMatchingPatchesForUrl('books.libsyn.com')
+				await findMatchingPatchesForUrl('grievousbodilycalm.bandcamp.com')
+				await findMatchingPatchesForUrl('bandcamp.com')
+				await findMatchingPatchesForUrl('medium.freecodecamp.org')
+				await findMatchingPatchesForUrl('jalopnik.com/some-bourgeois-nonsense')
+				await findMatchingPatchesForUrl('news.ycombinator.com')
+				await findMatchingPatchesForUrl('ycombinator.com')
 
 				
 			})
