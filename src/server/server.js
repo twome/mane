@@ -43,11 +43,11 @@ export const testMatcherAgainstUrl = (url, matcher, stripOutsidePeriods)=>{
 	return url.match(new RegExp(matcher))
 }
 
-export const findMatchingPatchesForUrl = async (url, forceRefresh, memCache = cache) => {
+export const findMatchingPatchesForUrl = async (url, forceRefresh, memCache = cache, needBody = false) => {
 	// Check memory cache for this exact url (for refreshes, duplicate tabs, history navigation etc)
 	// console.debug(cache.recentUrlsHistory)
 
-	let fromRecentUrls = memCache.recentUrlsHistory.get(url)
+	let fromRecentUrls = memCache.recentUrlsHistory && memCache.recentUrlsHistory.get(url)
 	if (fromRecentUrls){
 		console.debug('findMatchingPatchesForUrl: hit from fromRecentUrls memCache', url)
 		return fromRecentUrls // If we've added any new patches, we should have refilled this memCache
@@ -55,15 +55,16 @@ export const findMatchingPatchesForUrl = async (url, forceRefresh, memCache = ca
 
 	// console.debug({before: memCache})
 
-
 	let patchesToSearch = await getAllPatches(memCache, forceRefresh)
 	// Check memory cache of all matchers
 
-	let matchingPatches = patchesToSearch.filter(patch => {
+
+	let matchingPatches = [...patchesToSearch.values()].filter(patch => {
 		return patch.matchList.some(matcher => testMatcherAgainstUrl(url, matcher, config.accomodatingUrlMatching))
 	})
 	
-	matchingPatches = await getPatchAssetBodies(matchingPatches)
+	if (needBody) matchingPatches = await getPatchAssetBodies(matchingPatches)
+	console.debug({matchingPatches})
 
 	// Cache search result for this specific query / url
 	memCache.recentUrlsHistory.set(url, matchingPatches)

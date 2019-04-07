@@ -9,3 +9,6 @@ dist/
 
 # Temporary/development
 ignored/
+
+# Filesystem testing
+test/testing-sandbox/

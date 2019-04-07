@@ -5,10 +5,11 @@
   "author": "Tom Kenny <tom@twome.name>",
   "license": "MIT",
   "scripts": {
-    "postinstall": "git clone /Users/tome/Dropbox/git/panrepo.git node_modules/@twome/panrepo",
+    "postinstall": "rm -rf node_modules/@twome/panrepo && cp -R ~/projects/panrepo/. node_modules/@twome/panrepo",
+    "test": "node -r esm test.js",
     "build": "node -r esm build.js",
     "prod": "NODE_ENV=production node -r esm build.js",
-    "mon": "nodemon -r esm -w src/server.js src/server.js"
+    "mon": "nodemon -r esm -w test/ test.js"
   },
   "devDependencies": {
     "chai": "^4.2.0",

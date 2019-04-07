@@ -80,7 +80,7 @@ export let importPatchJson = async (url, scheme)=>{
 }
 
 
-export let savePatchToFS = async (patch, storageDir = config.storageDir) => {
+export let savePatchToFs = async (patch, storageDir = config.storageDir) => {
 	let filename = patch.id // This is the same as the concat'd matchList for small matchLists
 	
 	let jsPath = path.join(storageDir, filename + '.js')
@@ -150,7 +150,7 @@ export const getFsCache = async ({
 
 export const getPatchesFromDir = async (dirPath = config.storageDir) => {
 	let filenames = await readDir(dirPath)
-	console.debug('getPatchesFromDir: filenames', filenames)
+	// console.debug('getPatchesFromDir: filenames', filenames)
 	
 	let fileData = []
 	for (let name of filenames){
@@ -192,7 +192,7 @@ export const getAllPatches = async (memCache, forceRefresh) => {
 	// TODO: Comparing cache contents (rather than mere existence) to determine whether the next stage of caching is necessary
 
 	// Check mem cache
-	if (memCache.patches.length && !forceRefresh){
+	if (memCache && memCache.patches.length && !forceRefresh){
 		console.debug('getAllPatches: Hit & using mem cache for entire patches list')
 		return Object.values(memCache.patches)
 	}
