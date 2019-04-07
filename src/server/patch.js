@@ -10,13 +10,27 @@ let config = getConfig()
 // }
 
 export class Patch {
-	constructor({
-		/*String*/js,
-		/*String*/css,
-		/*Array of Assets*/assets = [],
-		/*Array of Strings*/matchList,
-		options = {}
-	}={}){
+	constructor(...args){
+		if (args.length === 1){
+			if (typeof args[0] === 'string'){
+				return new Patch({
+					matchList: [args[0]]
+				})
+			} else if (typeof args[0] === 'object'){
+				var {
+					/*String*/js,
+					/*String*/css,
+					/*Array of Assets*/assets = [],
+					/*Array of Strings*/matchList,
+					options = {}
+				} = args[0] 
+			} else {
+				throw Error('If providing a single argument to new Patch(), it must be an options Object.')
+			}
+		} else {
+			throw Error('Patch accepts one argument')
+		}
+
 		this.options = Object.assign(options, {
 			on: true,
 			maxFilenameSize: 60,

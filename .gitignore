@@ -1,6 +1,6 @@
 # User data
+## Default in-directory patch storage location
 patches/
-json-backups/
 
 # Machine-generated
 dist/

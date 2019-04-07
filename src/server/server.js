@@ -7,8 +7,6 @@ import cloneDeep from '../../node_modules/lodash-es/cloneDeep.js'
 import { Patch } from './patch.js'
 import { 
 	getAllPatches,
-	importPatchJson,
-	savePatchToFS,
 	getPatchAssetBodies 
 } from './files.js'
 import { getConfig } from './config.js'
@@ -31,7 +29,7 @@ let cache = {
 
 
 
-const testMatcherAgainstUrl = (url, matcher, stripOutsidePeriods)=>{
+export const testMatcherAgainstUrl = (url, matcher, stripOutsidePeriods)=>{
 	// Turn `*.libsyn.org.*` into `libsyn.org`, in case the user actually misunderstood the regex format and wanted to include, eg, subdomainless URLs (which have no `.` prefix)
 	if (stripOutsidePeriods) matcher = matcher.replace(/^\**\./, '').replace(/\.\**$/, '') 
 
@@ -45,20 +43,20 @@ const testMatcherAgainstUrl = (url, matcher, stripOutsidePeriods)=>{
 	return url.match(new RegExp(matcher))
 }
 
-const findMatchingPatchesForUrl = async (url, forceRefresh) => {
+export const findMatchingPatchesForUrl = async (url, forceRefresh, memCache = cache) => {
 	// Check memory cache for this exact url (for refreshes, duplicate tabs, history navigation etc)
 	// console.debug(cache.recentUrlsHistory)
 
-	let fromRecentUrls = cache.recentUrlsHistory.get(url)
+	let fromRecentUrls = memCache.recentUrlsHistory.get(url)
 	if (fromRecentUrls){
-		console.debug('findMatchingPatchesForUrl: hit from fromRecentUrls cache', url)
-		return fromRecentUrls // If we've added any new patches, we should have refilled this cache
+		console.debug('findMatchingPatchesForUrl: hit from fromRecentUrls memCache', url)
+		return fromRecentUrls // If we've added any new patches, we should have refilled this memCache
 	}
 
-	// console.debug({before: cache})
+	// console.debug({before: memCache})
 
 
-	let patchesToSearch = await getAllPatches(cache, forceRefresh)
+	let patchesToSearch = await getAllPatches(memCache, forceRefresh)
 	// Check memory cache of all matchers
 
 	let matchingPatches = patchesToSearch.filter(patch => {
@@ -68,16 +66,21 @@ const findMatchingPatchesForUrl = async (url, forceRefresh) => {
 	matchingPatches = await getPatchAssetBodies(matchingPatches)
 
 	// Cache search result for this specific query / url
-	cache.recentUrlsHistory.set(url, matchingPatches)
+	memCache.recentUrlsHistory.set(url, matchingPatches)
 
-	// console.debug({after: cache})
+	// console.debug({after: memCache})
 
 	console.debug(`matching patches for url "${url}":`, matchingPatches.map(patch => patch.matchList))
 
 	return matchingPatches
 }
 
-const makeServer = () => {
+export const makePatchMapFromStrings = matchListStrings => new Map(matchListStrings.map(matchListString => {
+	let patch = new Patch(matchListString)
+	return [patch.id, patch]
+})) 
+
+export const makeServer = () => {
 	let server = express()
 	
 	server.get(config.routes.patchesFor + '/:urlToPatch', (req, res, next) => {
@@ -107,57 +110,3 @@ const makeServer = () => {
 
 	return server
 }
-
-
-
-/*
-	Testing
-*/
-// TEMP
-let storedTestingJsonPath = path.join(paths.projectRoot, 'json-backups', 'user-js-css-v8-190402.json')
-importPatchJson(storedTestingJsonPath, config.patchJsonSchema.UserJavascriptAndCSS)
-	.then(patchArr => {
-
-		cache.patches = [...cache.patches, ...patchArr] // Store whole thing into memory
-		console.info(`Imported: ${patchArr.map(patch => patch.matchList)}`)
-
-		// let saves = patchArr.map(patch => savePatchToFS(patch, config.storageDir))
-		let saves = patchArr
-		Promise.all(saves).then(() => {
-			getAllPatches(cache, true).then(async () => {
-
-				await findMatchingPatchesForUrl('www.facebook.com')
-				await findMatchingPatchesForUrl('www.facebook.com')
-				await findMatchingPatchesForUrl('google')
-				await findMatchingPatchesForUrl('https://www.youtube')
-				await findMatchingPatchesForUrl('reddit.com')
-				await findMatchingPatchesForUrl('libsyn.com')
-				await findMatchingPatchesForUrl('books.libsyn.com')
-				await findMatchingPatchesForUrl('grievousbodilycalm.bandcamp.com')
-				await findMatchingPatchesForUrl('bandcamp.com')
-				await findMatchingPatchesForUrl('medium.freecodecamp.org')
-				await findMatchingPatchesForUrl('jalopnik.com/some-bourgeois-nonsense')
-				await findMatchingPatchesForUrl('news.ycombinator.com')
-				await findMatchingPatchesForUrl('ycombinator.com')
-
-			})
-
-		})
-
-		let server = makeServer()
-		server.listen(config.port, 'localhost', (err)=>{
-			if (err) throw err
-			// Server ready function
-			console.info(`Server successfully listening at: localhost:${config.port}`)
-		})
-		
-		server.on('error', err => {
-			console.debug('server.on error', err)
-		})
-
-
-	})
-	.catch(err => {
-		console.debug('WHOOPSIES')
-		console.error(err)
-	})

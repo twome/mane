@@ -1,10 +1,11 @@
-- BUG: changing moduleScope.patches at all fucks up because getAllPatches doesn't check for diffs before using caches
+- BUG: changing cache.patches at all fucks up because getAllPatches doesn't check for diffs before using caches
 
 - BUG: truncated-name patch assets are getting duplicated
+	- no ID present in JSON source means that new random IDs are getting created; it's not de-duping by checking patch contents against each other
+
+- tests
 
 - implement assets properly
-
-- ensure asset paths are present in responded patches
 
 - optionally write patches as a folder, so the the assets can reference sibling images etc within the folder
 
@@ -16,6 +17,8 @@
 	- initially only accessible via process table `ps -e`
 
 - maybe use BrowserFS to keep track of asset files? https://github.com/jvilk/BrowserFS
+
+- long-term storage of patches in browser 
 
 
 ## security/trust
