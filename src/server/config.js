@@ -3,7 +3,7 @@ const path = require('path')
 // import Enum from '../../node_modules/@twome/panrepo/enum.js'
 
 export let getConfig = () => {
-	return {
+	let cfg = {
 		port: 1917,
 		routes: {
 			patchesFor: '/patches-for'
@@ -27,4 +27,7 @@ export let getConfig = () => {
 			Css: 2
 		}
 	}
+	cfg.fsCacheFilePath = path.join(cfg.storageDir, cfg.fsCacheDir, cfg.fsCacheMatchListsFilename)
+
+	return cfg
 }

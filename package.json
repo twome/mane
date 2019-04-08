@@ -5,14 +5,16 @@
   "author": "Tom Kenny <tom@twome.name>",
   "license": "MIT",
   "scripts": {
-    "postinstall": "rm -rf node_modules/@twome/panrepo && cp -R ~/projects/panrepo/. node_modules/@twome/panrepo",
+    "postinstall": "rm -rf node_modules/@twome/panrepo/* && mkdir -p node_modules/@twome/panrepo && cp -R ~/projects/panrepo/. node_modules/@twome/panrepo",
     "test": "node -r esm test.js",
     "build": "node -r esm build.js",
     "prod": "NODE_ENV=production node -r esm build.js",
-    "mon": "nodemon -r esm -w test/ test.js"
+    "mon": "nodemon -r esm --watch test/ --ignore test/testing-sandbox test.js"
   },
   "devDependencies": {
+    "axios": "^0.18.0",
     "chai": "^4.2.0",
+    "debug": "^4.1.1",
     "live-server": "^1.2.1",
     "mocha": "^6.0.2",
     "parcel-bundler": "^1.12.3"

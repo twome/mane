@@ -121,9 +121,7 @@ export const updateMemCache = (patches, cache) => {
 }
 
 
-export const updateFSCache = async (patches, cachePath) => {
-	let path = cachePath || path.join(config.storageDir, config.fsCacheDir, config.fsCacheMatchListsFilename)
-
+export const updateFSCache = async (patches, path = config.fsCacheFilePath) => {
 	let patchesAsMap = patchArrToMap(patches)
 
 	// Write the full list of matchLists, including ones in non-literally-named files, into FS cache
@@ -137,7 +135,7 @@ export const updateFSCache = async (patches, cachePath) => {
 }
 
 export const getFsCache = async ({
-	cachePath = path.join(config.storageDir, config.fsCacheDir, config.fsCacheMatchListsFilename),
+	cachePath = config.fsCacheFilePath,
 	memCache
 }={}) => {
 	let previousFsCache = await readFile(cachePath)
@@ -188,7 +186,11 @@ export const getPatchesFromDir = async (dirPath = config.storageDir) => {
 	return patches
 }
 
-export const getAllPatches = async (memCache, forceRefresh) => {
+export const getAllPatches = async ({
+		memCache, 
+		fsCacheFilePath = config.fsCacheFilePath,
+		forceRefresh = false
+}={}) => {
 	// TODO: Comparing cache contents (rather than mere existence) to determine whether the next stage of caching is necessary
 
 	// Check mem cache
@@ -200,7 +202,7 @@ export const getAllPatches = async (memCache, forceRefresh) => {
 	let foundPatches = []
 	// Read FS cache
 	try {
-		let previousFsCacheJson = await getFsCache({memCache})
+		let previousFsCacheJson = await getFsCache({memCache, fsCacheFilePath})
 		console.debug('Found the FS cache file; reading that to find all patches.')
 		
 		// Instatiate all the JSON-ified plain objects into instances in memory
@@ -218,14 +220,17 @@ export const getAllPatches = async (memCache, forceRefresh) => {
 }
 
 
-export const updateAllCaches = (memCache) => {
-	let freshPatches = getAllPatches(memCache)
+export const updateAllCaches = (memCache, fsCachePath) => {
+	let freshPatches = getAllPatches({
+		memCache, fsCachePath,
+		forceRefresh: true
+	})
 	updateFSCache(freshPatches) 
 	updateMemCache(freshPatches, memCache)
 }
 
 
-let loadPatchFromFS = async (patchTitle, storageDir) => {
+let loadPatchFromFs = async (patchTitle, storageDir) => {
 	// ~ try load <title.js> and <title.css>
 	// ~ instatiate new patch
 }

@@ -3,6 +3,8 @@ const path = require('path')
 const escapeStringRegexp = require('escape-string-regexp')
 const express = require('express')
 import cloneDeep from '../../node_modules/lodash-es/cloneDeep.js'
+const debug = require('debug')
+const d_server = debug('server.js')
 
 import { Patch } from './patch.js'
 import { 
@@ -43,35 +45,43 @@ export const testMatcherAgainstUrl = (url, matcher, stripOutsidePeriods)=>{
 	return url.match(new RegExp(matcher))
 }
 
-export const findMatchingPatchesForUrl = async (url, forceRefresh, memCache = cache, needBody = false) => {
+export const findMatchingPatchesForUrl = async ({
+	url, forceRefresh, 
+	memCache = cache, 
+	fsCacheFilePath = config.fsCacheFilePath, 
+	needBody = false
+}={}) => {
 	// Check memory cache for this exact url (for refreshes, duplicate tabs, history navigation etc)
 	// console.debug(cache.recentUrlsHistory)
 
 	let fromRecentUrls = memCache.recentUrlsHistory && memCache.recentUrlsHistory.get(url)
 	if (fromRecentUrls){
-		console.debug('findMatchingPatchesForUrl: hit from fromRecentUrls memCache', url)
+		d_server('findMatchingPatchesForUrl: hit from fromRecentUrls memCache', url)
 		return fromRecentUrls // If we've added any new patches, we should have refilled this memCache
 	}
 
 	// console.debug({before: memCache})
 
-	let patchesToSearch = await getAllPatches(memCache, forceRefresh)
+	let patchesToSearch = await getAllPatches({
+		memCache, forceRefresh, fsCacheFilePath
+	})
 	// Check memory cache of all matchers
 
-
+	d_server('all patches', patchesToSearch)
 	let matchingPatches = [...patchesToSearch.values()].filter(patch => {
 		return patch.matchList.some(matcher => testMatcherAgainstUrl(url, matcher, config.accomodatingUrlMatching))
 	})
+	d_server({matchingPatches})
 	
 	if (needBody) matchingPatches = await getPatchAssetBodies(matchingPatches)
-	console.debug({matchingPatches})
+	d_server('matchings with body added', matchingPatches)
 
 	// Cache search result for this specific query / url
 	memCache.recentUrlsHistory.set(url, matchingPatches)
 
 	// console.debug({after: memCache})
 
-	console.debug(`matching patches for url "${url}":`, matchingPatches.map(patch => patch.matchList))
+	d_server(`matching patches for url "${url}":`, matchingPatches)
 
 	return matchingPatches
 }
@@ -84,7 +94,7 @@ export const makePatchMapFromStrings = matchListStrings => new Map(matchListStri
 export const makeServer = () => {
 	let server = express()
 	
-	server.get(config.routes.patchesFor + '/:urlToPatch', (req, res, next) => {
+	server.get(config.routes.patchesFor + '/:urlToPatch', (req, res) => {
 		console.info('Extension requested patches for url:', req.url)
 		
 		let urlToPatch = decodeURIComponent(req.params.urlToPatch)
@@ -93,7 +103,7 @@ export const makeServer = () => {
 		findMatchingPatchesForUrl(urlToPatch).then(patchArr => {
 			patchArr = cloneDeep(patchArr) // Copy before customising the response
 
-			console.debug('Query object:', req.query)
+			d_server('Query object:', req.query)
 
 			// ~ map of validating query commands/values 
 
