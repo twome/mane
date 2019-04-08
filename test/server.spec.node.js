@@ -8,7 +8,8 @@ const makeDir = util.promisify(fs.mkdir)
 const readDir = util.promisify(fs.readdir)
 
 const axios = require('axios')
-const debug = require('debug')('spec: server')
+// const debug = require('debug')('spec: server')
+const trash = require('trash')
 
 import { 
 	testMatcherAgainstUrl,
@@ -16,7 +17,13 @@ import {
 	makeServer,
 	makePatchMapFromStrings
 } from '../src/server/server.js'
-import { importPatchJson, savePatchToFs, getPatchesFromDir } from '../src/server/files.js'
+import { 
+	importPatchJson, 
+	savePatchToFs, 
+	getPatchesFromDir, 
+	getMatchListFromWithinFile, 
+	updateAllCaches
+} from '../src/server/files.js'
 import { getConfig } from '../src/server/config.js'
 import { Patch } from '../src/server/patch.js'
 
@@ -25,47 +32,116 @@ let paths = {
 	static: path.join(__dirname, 'static-materials'),
 	sandbox: path.join(__dirname, 'testing-sandbox')
 }
-paths.patchesJsonBackupPath = path.join(paths.static, 'user-js-css-v8-190402.json')
+paths.staticJsonBackup = path.join(paths.static, 'user-js-css-v8-190402.json')
 paths.staticPatches = path.join(paths.static, 'patches')
 paths.sandboxFsCacheFile = path.join(paths.sandbox, '.cache', 'fs-cache-matchlists.json')
 
+let itProd = (...args) => {
+	if (process.env.NODE_ENV === 'production'){
+		it(...args)
+	} else {
+		args[0] = 'TEST ONLY RUNS IN ENV: PRODUCTION ~ ' + args[0]
+		it(args[0])
+		return false 		
+	}
+}
+
+let fillSandbox = async filenameContentsMap => {
+	let writes = []
+
+	for (let filename of filenameContentsMap.keys()){
+		writes.push(writeFile(path.join(paths.sandbox, filename), filenameContentsMap.get(filename)))
+	}
+
+	return await Promise.all(writes)
+}
+let wipeSandbox = async () => trash(path.join(paths.sandbox, '/*'))
+
+let patchMapToIds = map => [...map.values()].map(patch => patch.id)
+
 describe('Server', function() {
 	
-	before(() => {
-	})
+	let archivePatches
+	before(async () => {
+		archivePatches = archivePatches || await importPatchJson(paths.staticJsonBackup, config.patchJsonSchema.UserJavascriptAndCSS)
 
-	let archivePatches, fsPatches, memPatches
+		return await fillSandbox(new Map([
+			[
+				'bandcamp.com.js',
+				'fake javascript contents'
+			],[
+				'grievousbodilycalm.bandcamp.com.js',
+				'fake javascript contents'
+			],[
+				'marxists.org.css',
+				'fake CSS contents'
+			],[
+				'bandcamp.com,marxists.org.css',
+				'fake CSS contents for multiple matchers'
+			],[
+				`000000${config.excessLengthIndicator}*.bandcamp.com,sa.org.au.css`,
+				'/* patch-urls *.bandcamp.com,sa.org.au */\nfake CSS contents for multiple matchers'
+			]
+		]))
+	})
+	
 	beforeEach(async () => {
-		archivePatches = archivePatches || await importPatchJson(paths.patchesJsonBackupPath, config.patchJsonSchema.UserJavascriptAndCSS)
-		memPatches = makePatchMapFromStrings([
-			'www.google.com',
-			'google.com',
-			'*.bandcamp.com',
-			'bandcamp.com',
-			'bandcamp.com,spotify.com'
-		])
-		fsPatches = fsPatches || await getPatchesFromDir(paths.staticPatches)
-	})
-
-	afterEach(async () => {
-		// TODO: clear the testing-sandbox
+		
 	})
 
 	describe('importing', () => {
 		it('imports patches from UserJavascriptAndCSS JSON exports', async () => {
-			let archivePatches = await importPatchJson(paths.patchesJsonBackupPath, config.patchJsonSchema.UserJavascriptAndCSS)
+			let archivePatches = await importPatchJson(paths.staticJsonBackup, config.patchJsonSchema.UserJavascriptAndCSS)
 			assert.isArray(archivePatches)
 			assert(archivePatches.length)
 		})
 
-		// it('reads patches from filesystem directory', async () => {
-		// 	let 
-		// })
+		it('gets matchLists from special comments', async () => {
+			let patchFileContents = `\n/* patch-urls example.*.com */\n`
+			await writeFile(path.join(paths.sandbox, 'an-example-patch.js'), patchFileContents)
+			let res = await getMatchListFromWithinFile(path.join(paths.sandbox, 'an-example-patch.js'))
+			assert.strictEqual(res, 'example.*.com')
+			fs.unlinkSync(path.join(paths.sandbox, 'an-example-patch.js'))
+		})
+
+		it('gets all patches from directory', async () => {
+			let patches = await getPatchesFromDir(paths.sandbox)
+			
+			assert(patches instanceof Map)
+
+			// Test the makeup of each patch
+			assert.strictEqual(patches.get('bandcamp.com').id, 'bandcamp.com')
+			assert.strictEqual(patches.get('bandcamp.com').js, undefined) // getPatchesFromDir shouldn't get asset bodies
+			assert.isArray(patches.get('bandcamp.com').matchList)
+			assert(patches.get('bandcamp.com') instanceof Patch)
+
+			// Look for matchLists within special comment
+			assert.deepEqual(patches.get(`000000${config.excessLengthIndicator}*.bandcamp.com,sa.org.au`).matchList, [
+				'*.bandcamp.com',
+				'sa.org.au'
+			])
+		})
+	})
+
+	describe('retrieving patches', () => {
+		it('test single matcher against url', () => {
+			assert.isFalse(testMatcherAgainstUrl('https://bandcamp.com', 'www.bandcamp.com'))
+			assert.isFalse(testMatcherAgainstUrl('https://bandcamp.com', '*.bandcamp.com'))
+			assert.isTrue(testMatcherAgainstUrl('https://bandcamp.com', '*bandcamp.com*'))
+			assert.isTrue(testMatcherAgainstUrl('https://bandcamp.com', '*bandcamp.com'))
+			assert.isTrue(testMatcherAgainstUrl('https://bandcamp.com', 'bandcamp.com*'))
+			assert.isTrue(testMatcherAgainstUrl('https://grievousbodilycalm.bandcamp.com', '*.bandcamp.com'))
+			assert.isTrue(testMatcherAgainstUrl('https://bandcamp.com', 'bandcamp.com'))
+			assert.isTrue(testMatcherAgainstUrl('https://bandcamp.com/about.html', 'bandcamp.com'))
+			assert.isFalse(testMatcherAgainstUrl('https://bandcamp.com', 'http:*facebook.com'))
+		})
 	})
 
 	describe('exporting', () => {
-		it('writes patches to a directory', async () => {
+		// Prod-only to avoid unnecessary write-wear on HDD
+		itProd('writes patches to a directory', async () => {
 			archivePatches.forEach(patch => {
+				// console.debug('saving patch', patch)
 				savePatchToFs(patch, paths.sandbox)
 			})
 			let readed = await readFile(path.join(paths.sandbox, 'amazon.com*.css'), 'utf-8')
@@ -73,58 +149,65 @@ describe('Server', function() {
 		})
 	})
 
-	describe('URL matching', function(){
+	describe('find matching patches from any cache / dir for URL (entire retrieval system)', function(){
 		let cache, findOptions, findWithOptions
-		beforeEach(async () => {
+		before(async () => {
 			cache = {
-				patches: memPatches,
+				patches: new Map(),
 				recentUrlsHistory: new Map(),
-				valid: true
+				valid: false
 			}
 
 			findOptions = {
 				forceRefresh: false,
 				memCache: cache,
-				fsCacheFilePath: paths.sandboxFsCacheFile
+				fsCacheFilePath: paths.sandboxFsCacheFile,
+				fsPath: paths.sandbox
 			}
 
 			findWithOptions = async url => await findMatchingPatchesForUrl(Object.assign({
-				url: config.routes.patchesFor + '/' + url
+				url
 			}, findOptions))
 		})
 
-		it('firstGoogle', async () => {
-			let res = findWithOptions('https://google.com') // www.google.com should miss this
-			assert.isArray(res)
-			assert.assert(res.length === 0)
+		it('caches are hit', async () => {
+			let allCachesEmpty = await findWithOptions('https://bandcamp.com') // www.bandcamp.com should miss this
+			assert.strictEqual(allCachesEmpty.fromCache, 'none')
+
+			let shouldHitSpecificUrlCache = await findWithOptions('https://bandcamp.com')
+			assert.strictEqual(shouldHitSpecificUrlCache.fromCache, 'specificUrl')
+
+			await updateAllCaches({
+				memCache: cache, 
+				fsCacheFilePath: paths.sandboxFsCacheFile,
+				fsPath: paths.sandbox
+			}).catch(err => {
+				console.error(`Couldn't update all caches`)
+			})
+			// TODO automatic cache refill
+			// await allCachesEmpty.cacheUpdate // Wait for the first refill of all caches
+
+			let shouldHitMemCache = await findWithOptions('https://bandcamp.com/tiny-difference')
+			assert.strictEqual(shouldHitMemCache.fromCache, 'memCache')
+
+			cache.patches = new Map() // Manually wipe the memCache - should still be able to consule the fsCacheFile
+
+			let shouldHitFsCache = await findWithOptions('https://bandcamp.com/different-again')
+			assert.strictEqual(shouldHitFsCache.fromCache, 'fsCacheFile')
 		})
 
-		it('hitSpecificSearchCache', async () => {
-			assert.isArray(findWithOptions('https://google.com'))
+		it('normal patch request', async () => {
+			let res = await findWithOptions('http://bandcamp.com')
+			let ids = patchMapToIds(res)
+			assert(ids.includes('bandcamp.com'))
+			assert(ids.includes('bandcamp.com,marxists.org'))
+			assert(!ids.includes('*.bandcamp.com')) // Only for present subdomains
 		})
 
-		it('http', async () => {
-			assert.isArray(findWithOptions('http://google.com'))
-		})
-
-		it('subdomain', async () => {
-			assert.isArray(findWithOptions('https://maps.google.com'))
-		})
-
-		it('subdomainExcludingDomain', async () => {
-			assert.isArray(findWithOptions('https://grievousbodilycalm.bandcamp.com'))
-		})
-
-		it('subdomainExcludingDomain2', async () => {
-			assert.isArray(findWithOptions('https://bandcamp.com'))
-		})
-
-		it('pathname', async () => {
-			assert.isArray(findWithOptions('https://google.com/search-results-page.html'))
-		})
-
-		it('Matches second matcher in a multiple-matcher matchList', async () => {
-			findWithOptions('https://open.spotify.com/artist/0WtTGUjbur1R1cNzBvbsMU')
+		it('matches second matcher in a multiple-matcher matchList', async () => {
+			let res = await findWithOptions('http://www.sa.org.au')
+			let ids = patchMapToIds(res)
+			assert(ids.includes(`000000${config.excessLengthIndicator}*.bandcamp.com,sa.org.au`))
 		})
 	})
 
@@ -132,19 +215,31 @@ describe('Server', function() {
 		let server
 		before(done => {
 			server = makeServer()
-			server.listen(config.port, 'localhost', (err)=>{
-				if (err) throw err
+			console.debug({server})
+			server.listen(9090, (err)=>{
+				if (err){
+					throw err
+				}
+				console.debug({server})
 				// Server ready function
 				done()
 			})
 		})
 
-		it('server responds with patches that match URL as array', async () => {
-			let response = axios.get(`localhost:${config.port}/www.google.com`)
-			debug('respond boy', response)
-
-		})
+		// TODO
+		it('server responds with patches that match URL as array')
+		/*it('server responds with patches that match URL as array', async () => {
+			try {
+				let response = await axios.get(`localhost:${config.port}${config.routes.patchesFor}/www.google.com`)	
+				assert(response)
+			} catch (err){
+				console.debug(`Couldn't get a connection to the local server!`)
+			}
+		})*/
 	})
 		
-	
+	after(async () => {
+		// return await wipeSandbox()
+	})
+
 })

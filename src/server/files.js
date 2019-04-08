@@ -7,12 +7,13 @@ const writeFile = util.promisify(fs.writeFile)
 const makeDir = util.promisify(fs.mkdir)
 const readDir = util.promisify(fs.readdir)
 
-const { DateTime } = require('luxon')
+import parseDate from '../../node_modules/date-fns/parse/index.js'
 import last from '../../node_modules/lodash-es/last.js'
 // import isEqual from '../../node_modules/lodash-es/isEqual.js'
 
 import { getConfig } from './config.js'
 import { Patch } from './patch.js'
+import { SpecialCommentMissing } from './errors.js'
 
 const config = getConfig()
 
@@ -33,7 +34,7 @@ export let importPatchJson = async (url, scheme)=>{
 					js: String,
 					css: String,
 					id: String (comma-separated list of URL matches (can have * wildcards))
-					libs: Array of Strings (URLs of side-effect dependencies)
+					libs: String[] (URLs of side-effect dependencies)
 					options: {
 						altCSS: Boolean,
 				        altJS: Boolean,
@@ -68,7 +69,7 @@ export let importPatchJson = async (url, scheme)=>{
 			{
 				js: String,
 				css: String,
-				matchList: Array of Strings (URL matches (can have * wildcards)),
+				matchList: String[] (URL matches (can have * wildcards)),
 				options: {
 					on: Boolean
 				}
@@ -94,7 +95,7 @@ export let savePatchToFs = async (patch, storageDir = config.storageDir) => {
 }
 
 
-export const getMatchListFromFile = async (path) => {
+export const getMatchListFromWithinFile = async (path) => {
 	// We have to look inside the file for the full matchList, as the filename was too large to hold it.
 	// TODO: stream-read only the first few lines to dramatically reduce FS i/o bottleneck
 	let fileBody = await readFile(path, 'utf-8')
@@ -106,28 +107,26 @@ export const getMatchListFromFile = async (path) => {
 		if (match) return match[1] // The matchlist itself (regex'd group 1)
 	}
 
-	return Error('Expected a special comment in this format: /* patch-urls <comma-separated list of domain regexes> */')
+	return new SpecialCommentMissing()
 }
 
-const patchArrToMap = patchesArr => new Map(patchesArr.map(patch => [patch.id, patch]))
+const patchArrToMap = patchesArr => {
+	return new Map(patchesArr.map(patch => [patch.id, patch]))
+}
 
 export const updateMemCache = (patches, cache) => {
-	let patchesAsMap = patchArrToMap(patches)
-
 	// Renew mem cache
-	cache.patches = patchesAsMap 
-	cache.lastFsWrotePatches = DateTime.local().toISO()
+	cache.patches = patches 
+	cache.lastFsWrotePatches = new Date()
 	cache.valid = true
 }
 
 
 export const updateFSCache = async (patches, path = config.fsCacheFilePath) => {
-	let patchesAsMap = patchArrToMap(patches)
-
 	// Write the full list of matchLists, including ones in non-literally-named files, into FS cache
 	let forFsCacheObject = {
-		patches: patchesAsMap,
-		dateWritten: DateTime().local().toISO()
+		patches: patches,
+		dateWritten: new Date().toISOString()
 	}
 
 	// Renew FS cache
@@ -135,36 +134,40 @@ export const updateFSCache = async (patches, path = config.fsCacheFilePath) => {
 }
 
 export const getFsCache = async ({
-	cachePath = config.fsCacheFilePath,
+	fsCacheFilePath = config.fsCacheFilePath,
 	memCache
 }={}) => {
-	let previousFsCache = await readFile(cachePath)
+	let previousFsCache = await readFile(fsCacheFilePath)
 	let previousFsCacheJson = JSON.parse(previousFsCache)
 	
-	if (memCache) memCache.lastFsWrotePatches = DateTime.fromISO(previousFsCacheJson.dateWritten)
-	
+	if (memCache) memCache.lastFsWrotePatches = parseDate(previousFsCacheJson.dateWritten)	
+
 	return previousFsCacheJson
 }
 
 export const getPatchesFromDir = async (dirPath = config.storageDir) => {
 	let filenames = await readDir(dirPath)
-	// console.debug('getPatchesFromDir: filenames', filenames)
+
+	filenames = filenames.filter(name => {
+		if (!name.match(/\.(css|js)$/)) return false // Filter out files that shouldn't be here
+		return true
+	})
 	
 	let fileData = []
 	for (let name of filenames){
-		let file = new Promise(async (res, rej)=>{
+		let file = new Promise(async (resolve, rej)=>{
 			let matchListStr, id
 			if (name.match(config.excessLengthIndicator)){ 
 				// In the past, this file had to be saved with a randomly-generated ID + indicator string instead of the literal stringified matchList
 
 				// Go inside the file and look for the special comment
-				matchListStr = await getMatchListFromFile(path.join(dirPath, name))
+				matchListStr = await getMatchListFromWithinFile(path.join(dirPath, name))
 			} else {
 				// The filename already is the matchList
 				matchListStr = name.replace(/\.(css|js)\s*$/, '')
 			}
 			id = name.replace(/\.(css|js)\s*$/, '') // Remove file extension and use the filename as ID
-			res({name, matchListStr, id})
+			resolve({name, matchListStr, id})
 		})
 		fileData.push(file)
 	}
@@ -178,55 +181,75 @@ export const getPatchesFromDir = async (dirPath = config.storageDir) => {
 		let extantPatch = patches.get(file.id) || new Patch(file) // Re-use the same patch made from a different asset file with the same ID, if needed
 	
 		let fileExtension = last(file.name.split('.'))
-		if (fileExtension === 'js') extantPatch.addAsset(config.assetTypes.Js, path.join(dirPath, file.name))
-		if (fileExtension === 'css') extantPatch.addAsset(config.assetTypes.Css, path.join(dirPath, file.name))
+		if (fileExtension === 'js'){
+			extantPatch.addAsset(config.assetTypes.Js, path.join(dirPath, file.name))
+		}
+		if (fileExtension === 'css'){
+			extantPatch.addAsset(config.assetTypes.Css, path.join(dirPath, file.name))
+		}
 		patches.set(extantPatch.id, extantPatch)
 	})
 
 	return patches
 }
 
-export const getAllPatches = async ({
-		memCache, 
-		fsCacheFilePath = config.fsCacheFilePath,
-		forceRefresh = false
-}={}) => {
+export const getAllPatches = async function({
+	memCache, 
+	fsCacheFilePath = config.fsCacheFilePath,
+	fsPath = config.storageDir,
+	forceRefresh = false
+}={}){
 	// TODO: Comparing cache contents (rather than mere existence) to determine whether the next stage of caching is necessary
+	let fromCache
 
 	// Check mem cache
 	if (memCache && memCache.patches.length && !forceRefresh){
 		console.debug('getAllPatches: Hit & using mem cache for entire patches list')
+		fromCache = 'memCache'
+
 		return Object.values(memCache.patches)
 	}
 
 	let foundPatches = []
-	// Read FS cache
-	try {
-		let previousFsCacheJson = await getFsCache({memCache, fsCacheFilePath})
-		console.debug('Found the FS cache file; reading that to find all patches.')
-		
-		// Instatiate all the JSON-ified plain objects into instances in memory
-		previousFsCacheJson.patches.forEach((plainObject) => {
-			foundPatches.push(new Patch(plainObject))
-		})
-	} catch (err){
-		// No extant FS cache file; instead, we must read dir contents
-		console.warn('No FS cache file found; reading entire dir contents.')
-		
-		foundPatches = await getPatchesFromDir()
-	}	
 
+	if (!forceRefresh){
+		// Read FS cache
+		try {
+			let previousFsCacheJson = await getFsCache({memCache, fsCacheFilePath})
+			console.debug('Found the FS cache file; reading that to find all patches.')
+			
+			// Instatiate all the JSON-ified plain objects into instances in memory
+			previousFsCacheJson.patches.forEach((plainObject) => {
+				foundPatches.push(new Patch(plainObject))
+			})
+
+			fromCache = 'fsCacheFile'
+		} catch (err){
+			// No extant FS cache file; instead, we must read dir contents
+			foundPatches = await getPatchesFromDir(fsPath)
+			fromCache = 'none'
+		}
+	} else {
+		foundPatches = await getPatchesFromDir(fsPath)
+		fromCache = 'noneForced'
+	}
+
+	foundPatches.fromCache = fromCache
 	return foundPatches
 }
 
 
-export const updateAllCaches = (memCache, fsCachePath) => {
-	let freshPatches = getAllPatches({
-		memCache, fsCachePath,
+export const updateAllCaches = async ({memCache, fsCacheFilePath, fsPath}={}) => {
+	let freshPatches = await getAllPatches({
+		memCache, fsCacheFilePath, fsPath,
 		forceRefresh: true
 	})
-	updateFSCache(freshPatches) 
-	updateMemCache(freshPatches, memCache)
+	await Promise.all[
+		updateFSCache(freshPatches, fsCacheFilePath),
+		updateMemCache(freshPatches, memCache)
+	]
+	memCache.valid = true
+	return true
 }
 
 

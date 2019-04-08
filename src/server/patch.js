@@ -20,8 +20,9 @@ export class Patch {
 				var {
 					/*String*/js,
 					/*String*/css,
-					/*Array of Assets*/assets = [],
-					/*Array of Strings*/matchList,
+					/*Asset[]*/assets = [],
+					/*String[]*/matchList,
+					/*String*/id,
 					options = {}
 				} = args[0] 
 			} else {
@@ -51,7 +52,7 @@ export class Patch {
 		}
 		
 		let concatenatedMatchList = this.matchList.join(',')
-		this.id = concatenatedMatchList // If short enough, the ID simply becomes the matchList in string form
+		this.id = id || concatenatedMatchList // If short enough, the ID simply becomes the matchList in string form
 		
 		if (concatenatedMatchList.length >= this.options.maxFilenameSize || this.matchListInComment){ 
 			if (!this.matchListInComment){ // We don't want to add this comment if it already exists!
