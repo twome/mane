@@ -1,34 +1,43 @@
 - BUG: changing cache.patches at all fucks up because getAllPatches doesn't check for diffs before using caches
 
-- BUG: truncated-name patch assets are getting duplicated
-	- no ID present in JSON source means that new random IDs are getting created; it's not de-duping by checking patch contents against each other
+- FEAT: proper icon
 
-- proper icon
+- DEBT: pass a single config object down the line of each function call rather than these unwieldy duplicated argument objects
 
-- pass a single config object down the line of each function call rather than these unwieldy duplicated argument objects
+- DEBT: implement assets properly
 
-- implement assets properly
+- DEBT: extension should parallel-load all scripts and bodies before injecting references
 
-- optionally write patches as a folder, so the the assets can reference sibling images etc within the folder
+- FEAT: optionally write patches as a folder, so the the assets can reference sibling images etc within the folder
 
-- switch to Deno for extremely easy user installation
+- FEAT: switch to Deno for extremely easy user installation
 
-- [potential security risk]: extension can directly fetch remote files or use a JS git implementation to directly check out repos
+- FEAT: extension can directly fetch remote files or use a JS git implementation to directly check out repos
+	SECURITY: obvious issues
 
-- minimal memory/cpu footprint executable; boot on load
-	- initially only accessible via process table `ps -e`
+- FEAT: minimal memory/cpu footprint executable; boot on load
+	- initially only accessible via process table `ps -e`?
 
-- maybe use BrowserFS to keep track of asset files? https://github.com/jvilk/BrowserFS
+- FEAT: use native communication instead of HTTP between server and extension
 
-- long-term storage of patches in browser 
+- FEAT: maybe use BrowserFS to keep track of (and cache) asset files in extension? https://github.com/jvilk/BrowserFS
 
+- FEAT: long-term storage of patches in browser 
+
+- FEAT: create new patch for current domain from extension
+	- JS, CSS, or both
+	- optional text input for matchList
+
+- FEAT: set patch storage dir from server CL arg & extension popup
 
 ## extension
 
 contentScripts API to register patches at runtime (instead of modifying <head>)
+	- pro: only interference with user page is from patch itself
+	- pro: faster loading / load asynchronously?
+	- con: security hazard from patches having greater power
 
 pageAction to only show up in address bar when active
-
 
 ## security/trust
 
@@ -38,9 +47,6 @@ We can't easily do any permissions restrictions or granularity (we could try and
 	- manually trust domain AND trust specific pathname (ie file) -> trust can be referred from a developer you trust (that can read the code and audit)
 	- trust per-version; ie copy the remote file and ONLY ever use the static copy, only manually updating from the source URL when the auto-checker detects an update. present a diff and changelog
 		- automatically use https://github.com/isomorphic-git/isomorphic-git for this if remote url is a repo, rather than a patch file
-
-
-
 
 ## long term
 

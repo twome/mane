@@ -14,7 +14,7 @@
 	"content_scripts": [
 		{
 			"matches": ["*://*/*"],
-			"js": ["mane.js"]
+			"js": ["injector.js"]
 		}
 	],
 	

@@ -256,7 +256,7 @@ describe('Server', function() {
 	})
 		
 	after(async () => {
-		// return await wipeSandbox()
+		return await wipeSandbox()
 	})
 
 })

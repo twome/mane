@@ -1,9 +1,16 @@
 {
   "name": "domain-patches",
   "version": "1.0.0",
-  "main": "dist/server.js",
+
+  "main": "src/server.js",
+  "programmatic-module": "src/server.js",
+
+  "bin": "bin/mane.js",
+  "cli-executable": "bin/mane.js",
+
   "author": "Tom Kenny <tom@twome.name>",
   "license": "MIT",
+
   "scripts": {
     "postinstall": "rm -rf node_modules/@twome/panrepo/* && mkdir -p node_modules/@twome/panrepo && cp -R ~/projects/panrepo/. node_modules/@twome/panrepo",
     "test": "node -r esm test.js",
@@ -11,6 +18,7 @@
     "prod": "NODE_ENV=production node -r esm build.js",
     "mon": "nodemon -r esm --watch test/ --ignore test/testing-sandbox test.js"
   },
+  
   "devDependencies": {
     "axios": "^0.18.0",
     "chai": "^4.2.0",
