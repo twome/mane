@@ -70,7 +70,18 @@ export const findMatchingPatchesForUrl = async ({
 		return patch.matchList.some(matcher => testMatcherAgainstUrl(url, matcher, config.accomodatingUrlMatching))
 	})
 	
-	if (needBody) matchingPatches = await getPatchAssetBodies(matchingPatches)
+	if (needBody){
+		matchingPatches = matchingPatches.map(async patch => {
+			try {
+				patch.assets = await getPatchAssetBodies(patch, fsPath)			
+				return patch
+			} catch(err){
+				console.error('Patch asset file missing')
+				throw Error('Patch asset file missing')
+			}
+		})
+		matchingPatches = await Promise.all(matchingPatches)
+	}
 
 	// Cache search result for this specific query / url
 	memCache.recentUrlsHistory.set(url, matchingPatches)
@@ -92,7 +103,7 @@ export const makeServer = (cfg = config) => {
 	let server = express()
 	
 	server.get(cfg.routes.patchesFor + '/:urlToPatch', (req, res) => {
-		console.info('Extension requested patches for url:', req.url)
+		console.info('Extension requested patches for url:', decodeURIComponent(req.url))
 		
 		let urlToPatch = decodeURIComponent(req.params.urlToPatch)
 		// console.debug({urlToPatch})
@@ -102,7 +113,7 @@ export const makeServer = (cfg = config) => {
 			memCache: cfg.memCache || cache,
 			fsCacheFilePath: cfg.fsCacheFilePath,
 			fsPath: cfg.storageDir,
-			needBody: true
+			// needBody: true
 		}).then(patchArr => {
 			patchArr = cloneDeep(patchArr) // Copy before customising the response
 
@@ -122,9 +133,16 @@ export const makeServer = (cfg = config) => {
 		}).catch(err => {
 			console.debug(`Couldn't look for patches!`)
 
-			req.send(404)
+			res.sendStatus(404)
+			// res.send(`Couldn't execute the patch search for URL`)
 		})
 	})
+	server.get('*', (req, res, next) => {
+		res.header("Access-Control-Allow-Origin", "*")
+		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+		next()
+	})
+	server.get('*', express.static(cfg.storageDir))
 
 	return server
 }

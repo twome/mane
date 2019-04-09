@@ -68,19 +68,19 @@ describe('Server', function() {
 		return await fillSandbox(new Map([
 			[
 				'bandcamp.com.js',
-				'fake javascript contents'
+				'// fake javascript contents'
 			],[
 				'grievousbodilycalm.bandcamp.com.js',
-				'fake javascript contents'
+				'// fake javascript contents'
 			],[
 				'marxists.org.css',
-				'fake CSS contents'
+				'/* fake CSS contents */'
 			],[
 				'bandcamp.com,marxists.org.css',
-				'fake CSS contents for multiple matchers'
+				'/* fake CSS contents for multiple matchers */'
 			],[
 				`000000${config.excessLengthIndicator}*.bandcamp.com,sa.org.au.css`,
-				'/* patch-urls *.bandcamp.com,sa.org.au */\nfake CSS contents for multiple matchers'
+				'/* patch-urls *.bandcamp.com,sa.org.au */\n/* fake CSS contents for multiple matchers */'
 			]
 		]))
 	})
@@ -211,7 +211,7 @@ describe('Server', function() {
 		})
 	})
 
-	describe('serving requests', function(){
+	describe('serving HTTP requests', function(){
 		let server, cache
 		before(done => {
 			cache = {
@@ -235,8 +235,7 @@ describe('Server', function() {
 			})
 		})
 
-		// TODO
-		it('server responds with patches that match URL as array', async () => {
+		it('responds with patches that match URL as array', async () => {
 			let response
 			try {
 				response = await axios.get(`http://localhost:${config.port}${config.routes.patchesFor}/bandcamp.com`)	
@@ -249,6 +248,11 @@ describe('Server', function() {
 			assert(response.data.map(patch => patch.id).includes('bandcamp.com,marxists.org'))
 			assert(response.data.map(patch => patch.id).includes('bandcamp.com'))
 		})
+
+		it(`responds with patch bodies if asked`)
+		it(`provides no way for requests from the patch to read anything other than the storageDir`)
+		it(`only gives web-root-relative urls (ie of the storageDir) for asset files`)
+		it(`leaves out the .js and .css body content if req param \`include-body=false\``)
 	})
 		
 	after(async () => {

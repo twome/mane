@@ -3,6 +3,8 @@
 - BUG: truncated-name patch assets are getting duplicated
 	- no ID present in JSON source means that new random IDs are getting created; it's not de-duping by checking patch contents against each other
 
+- proper icon
+
 - pass a single config object down the line of each function call rather than these unwieldy duplicated argument objects
 
 - implement assets properly
@@ -19,6 +21,13 @@
 - maybe use BrowserFS to keep track of asset files? https://github.com/jvilk/BrowserFS
 
 - long-term storage of patches in browser 
+
+
+## extension
+
+contentScripts API to register patches at runtime (instead of modifying <head>)
+
+pageAction to only show up in address bar when active
 
 
 ## security/trust

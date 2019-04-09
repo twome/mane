@@ -1,0 +1,27 @@
+{
+	// Mandatory properties
+	"manifest_version": 2,
+	"name": "Mane",
+	"version": "0.1",
+
+	// Optional
+	"description": "Inserts your homemade JS & CSS patches into any pages you want.",
+
+	"icons": {
+		"41": "images/deep-palm.png"
+	},
+
+	"content_scripts": [
+		{
+			"matches": ["*://*/*"],
+			"js": ["mane.js"]
+		}
+	],
+	
+	// Metadata for Firefox identification
+	"applications": {
+		"gecko": {
+			"id": "mane@twome.name"
+		}
+	}
+}

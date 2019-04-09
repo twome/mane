@@ -17,13 +17,28 @@ import { SpecialCommentMissing } from './errors.js'
 
 const config = getConfig()
 
-export const getPatchAssetBodies = async (patches) => {
-	patches.map(async patch => {
-		// TODO: parallelise
-		if (!patch.js && patch.pathJs) patch.js = await readFile(patch.pathJs)
-		if (!patch.css && patch.pathCss) patch.Css = await readFile(patch.pathCss)
+export const getPatchAssetBodies = async (patch, fsPath = config.storageDir) => {
+	// TODO: parallelise
+	let reads
+	let assets = patch.assets.map(asset => {
+		console.debug('asset is ', asset)
+		console.debug(path.join(fsPath, asset.fileUrl))
+		if (!asset.fileUrl) return asset
+		reads.push(
+			readFile(path.join(fsPath, asset.fileUrl))
+				.then(body => {
+					console.debug('FOUND ASSET!!!')
+					asset.body = body
+				}).catch(err => {
+					console.debug('missing asset', path.join(fsPath, asset.fileUrl) ,err)
+					asset.body = null
+				})
+		)
+		return asset
 	})
-	return await Promise.all(patches)
+	await Promise.all(reads) // Wait until bodies for this asset all fetched
+	console.debug({assets})
+	return assets
 }
 
 export let importPatchJson = async (url, scheme)=>{
@@ -182,10 +197,10 @@ export const getPatchesFromDir = async (dirPath = config.storageDir) => {
 	
 		let fileExtension = last(file.name.split('.'))
 		if (fileExtension === 'js'){
-			extantPatch.addAsset(config.assetTypes.Js, path.join(dirPath, file.name))
+			extantPatch.addAsset(config.assetTypes.Js, file.name)
 		}
 		if (fileExtension === 'css'){
-			extantPatch.addAsset(config.assetTypes.Css, path.join(dirPath, file.name))
+			extantPatch.addAsset(config.assetTypes.Css, file.name)
 		}
 		patches.set(extantPatch.id, extantPatch)
 	})
