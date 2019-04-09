@@ -212,30 +212,43 @@ describe('Server', function() {
 	})
 
 	describe('serving requests', function(){
-		let server
+		let server, cache
 		before(done => {
-			server = makeServer()
-			console.debug({server})
-			server.listen(9090, (err)=>{
+			cache = {
+				patches: new Map(),
+				recentUrlsHistory: new Map(),
+				valid: false
+			}
+
+			let serverCfg = Object.assign(config, {
+				fsCacheFilePath: paths.fsCacheFilePath, 
+				memCache: cache,
+				storageDir: paths.sandbox
+			})
+			server = makeServer(serverCfg)
+			server.listen(config.port, (err)=>{
 				if (err){
 					throw err
 				}
-				console.debug({server})
 				// Server ready function
 				done()
 			})
 		})
 
 		// TODO
-		it('server responds with patches that match URL as array')
-		/*it('server responds with patches that match URL as array', async () => {
+		it('server responds with patches that match URL as array', async () => {
+			let response
 			try {
-				let response = await axios.get(`localhost:${config.port}${config.routes.patchesFor}/www.google.com`)	
-				assert(response)
+				response = await axios.get(`http://localhost:${config.port}${config.routes.patchesFor}/bandcamp.com`)	
 			} catch (err){
 				console.debug(`Couldn't get a connection to the local server!`)
+				return Error(`Couldn't get a connection to the local server!`)
 			}
-		})*/
+			assert.isArray(response.data)
+			assert(response.data.map(patch => patch.id).includes(`000000${config.excessLengthIndicator}*.bandcamp.com,sa.org.au`))
+			assert(response.data.map(patch => patch.id).includes('bandcamp.com,marxists.org'))
+			assert(response.data.map(patch => patch.id).includes('bandcamp.com'))
+		})
 	})
 		
 	after(async () => {
@@ -243,3 +256,24 @@ describe('Server', function() {
 	})
 
 })
+
+/*
+let cache2 = {
+	patches: new Map(),
+	recentUrlsHistory: new Map(),
+	valid: false
+}
+
+let serverCfg = Object.assign(config, {
+	fsCacheFilePath: paths.fsCacheFilePath, 
+	memCache: cache2,
+	storageDir: paths.sandbox
+})
+let server2 = makeServer(serverCfg)
+server2.listen(9090, (err)=>{
+	if (err){
+		throw err
+	}
+	// Server ready function
+	console.debug('LISSNIN')
+})*/

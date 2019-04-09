@@ -3,7 +3,7 @@
 - BUG: truncated-name patch assets are getting duplicated
 	- no ID present in JSON source means that new random IDs are getting created; it's not de-duping by checking patch contents against each other
 
-- tests
+- pass a single config object down the line of each function call rather than these unwieldy duplicated argument objects
 
 - implement assets properly
 

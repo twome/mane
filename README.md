@@ -63,20 +63,17 @@ Normally, a filename for a patch will simply be the matchList concatenated into 
 
 It's a bit risky to create gigantic path names; lots of programs don't deal well with excessive sizes. Instead, we'll: 
 	
-
-- give this patch a random ID, 
-
-- name the assets (JS & CSS) with that ID, 
- - put them in a folder that has an ID prefix plus a few of the matches for human readability
-- create a .txt file within this folder containing the full matchList in .gitconfig style	
+- give this patch's ID a random prefix, plus a sample of a few of the matches for human readability
+- name the assets (JS & CSS) with that ID,
+- put them in a folder that has an ID 
+- insert the special comment `/* patch-urls <matches string goes here> */` at the top of each asset
 
 When applying patches, we'll resolve each domain by:
 	
-
 - looking for a match in root asset (JS/CSS) filenames, then
 - looking for a match in folder names (apply all files in folder), then
-- looking for a match in folderName/matches.txt and applying all files in folder
- - (optional & slow) looking for a custom comment in the first non-whitespace line of every asset: `/* patch-urls <matches string here> */`
+- [TODO] looking for a match in folderName/matches.txt and applying all files in folder
+- (optional & slow) looking for a custom comment in the first non-whitespace line of every asset: `/* patch-urls <matches string goes here> */`
 
 The app should cache an index file of the locations of assets for all matchers from every patch's matchList, as looking through so many FS files will be very slow. It should also cache the contents of the assets in memory for repeated visits to pages with the same matchers.
 
@@ -88,4 +85,4 @@ To use this JS / CSS, go to any page in your browser, click the User Javascript 
 
 ### No Chrome?
 
-You're on your own to find an extension/method to add these scripts to Twitter pages, but there's nothing about these scripts that are specific to Chrome whatsoever.
+You're on your own to find an extension/method to add these scripts into pages you visit, but there's nothing about these scripts that are specific to Chrome whatsoever.

@@ -88,16 +88,22 @@ export const makePatchMapFromStrings = matchListStrings => new Map(matchListStri
 	return [patch.id, patch]
 })) 
 
-export const makeServer = () => {
+export const makeServer = (cfg = config) => {
 	let server = express()
 	
-	server.get(config.routes.patchesFor + '/:urlToPatch', (req, res) => {
+	server.get(cfg.routes.patchesFor + '/:urlToPatch', (req, res) => {
 		console.info('Extension requested patches for url:', req.url)
 		
 		let urlToPatch = decodeURIComponent(req.params.urlToPatch)
 		// console.debug({urlToPatch})
 
-		findMatchingPatchesForUrl(urlToPatch).then(patchArr => {
+		findMatchingPatchesForUrl({
+			url: urlToPatch,
+			memCache: cfg.memCache || cache,
+			fsCacheFilePath: cfg.fsCacheFilePath,
+			fsPath: cfg.storageDir,
+			needBody: true
+		}).then(patchArr => {
 			patchArr = cloneDeep(patchArr) // Copy before customising the response
 
 			// d_server('Query object:', req.query)
