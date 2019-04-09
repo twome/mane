@@ -1,12 +1,14 @@
 # Mane
 
+<small><i>Short for "do<b>main</b> patcher"</i></small>
+
 ##### Status: pre-alpha; not for public use
 
 A Node + WebExtension app that automatically inserts your custom JavaScript and CSS files, stored on your hard drive or a remote Git repository, into web pages to customise them - fix bugs, improve the visual design, remove ads - whatever you want! 
 
 It also allows you to easily share and use public community "patches", so everyone can easily benefit from one person's customisations. 
 
-This is similar in approach to GreaseMonkey on Firefox, and 'User Javascript & CSS' on Chrome, but with an emphasis on editing and storing the patches in whatever way suits you, instead of in a custom editor and locked into a single browser extension's database.
+This is similar in approach to [GreaseMonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)/[TamperMonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo), and '[User Javascript & CSS](https://chrome.google.com/webstore/detail/user-javascript-and-css/nbhcbdghjpllgmfilhnhkllmkecfmpld)' on Chrome, but with an emphasis on editing and storing the patches in whatever way suits you, instead of in a custom editor and locked into a single browser extension's database.
 
 ## Installation
 
@@ -89,7 +91,7 @@ Install Chrome extension [User Javascript & CSS](https://chrome.google.com/webst
 
 To use this JS / CSS, go to any page in your browser, click the User Javascript & CSS button, click 'Add new' and then copy the contents of these files into the relevant panes. "UJS&CSS" will then automatically detect any time you visit a URL that is based on your current page's domain (eg "twitter.com"), and will add these files into the page.
 
-### No Chrome?
+##### No Chrome?
 
 You're on your own to find an extension/method to add these scripts into pages you visit, but there's nothing about these scripts that are specific to Chrome whatsoever.
 
