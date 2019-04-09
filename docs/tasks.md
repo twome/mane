@@ -30,6 +30,8 @@
 
 - FEAT: set patch storage dir from server CL arg & extension popup
 
+- FEAT: executable or CL arg to back up all patches into json
+
 ## extension
 
 contentScripts API to register patches at runtime (instead of modifying <head>)

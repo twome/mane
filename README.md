@@ -10,13 +10,19 @@ This is similar in approach to GreaseMonkey on Firefox, and 'User Javascript & C
 
 ## Installation
 
-<TODO; no instructions yet>
+#### Server
+
+Clone this repo, then, from the command line, `cd` into it, run `yarn install`, and run `node -r esm bin/mane.js` to start the Node server.
+
+#### Browser extension
+
+Turn on 'developer mode' in your browser's extension manager, then load this repo's `src/extension/` folder as an unpacked extension.
 
 ## Usage
 
 <i>**A note on terminology:** Here we refer to a "patch" to mean "a collection of JS and CSS files that are activated according to their list of URL matchers". "Matchers" are [regular expressions](https://regexr.com/) which test against the browser's current URL. If any of a patch's matches match the current page, the browser extension will inject all of its files into the page.</i>
 
-You can quickly make a new patch that matches the current page's **domain** (eg. `google.com` - which includes `maps.google.com`, `www.google.com`, and `google.com/a-search-result`) by clicking 'New patch' in the Mane browser extension's popup. This will automatically create a new empty CSS and/or JS file in your `~/.mane-patches` folder, and open them in your default code editor. 
+You can quickly make a new patch that matches the current page's **domain** (eg. `google.com` - which includes `maps.google.com`, `www.google.com`, and `google.com/a-search-result`) by clicking 'New patch' in the Mane browser extension's popup. This will automatically create a new empty CSS and/or JS file in this repo's `patches/` folder, and open them in your default code editor. 
 
 You can disable a patch using the browser extension's popup (which will list any patches on the current page), or by including a comment in the patch file(s) that looks like this:
 
@@ -28,7 +34,7 @@ You can disable a patch using the browser extension's popup (which will list any
 
 ### Advanced URL matching
 
-You don't need to use the extension to create a patch; it's only a convenience. You can simply make a new file in your `~/.mane-patches` directory (this default location can be [changed](#configuration)). Name the file with the exact text of the matcher list you want to use, plus `.js` or `.css`.
+You don't need to use the extension to create a patch; it's only a convenience. You can simply make a new file in this repo's `patches/` directory (this default location can be [changed](#configuration)[TODO]). Name the file with the exact text of the matcher list you want to use, plus `.js` or `.css`.
 
 Eg. for a patch that styles all artist subdomains on Bandcamp, but not the main Bandcamp page itself, you would create:
 
@@ -86,3 +92,7 @@ To use this JS / CSS, go to any page in your browser, click the User Javascript 
 ### No Chrome?
 
 You're on your own to find an extension/method to add these scripts into pages you visit, but there's nothing about these scripts that are specific to Chrome whatsoever.
+
+## License
+
+MIT
