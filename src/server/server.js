@@ -1,25 +1,16 @@
-const path = require('path')
-
 const escapeStringRegexp = require('escape-string-regexp')
 const express = require('express')
 import cloneDeep from '../../node_modules/lodash-es/cloneDeep.js'
-const debug = require('debug')
-const d_server = debug('server.js')
 
 import { Patch } from './patch.js'
 import { 
 	getAllPatches,
-	getPatchAssetBodies,
-	updateAllCaches
+	getPatchAssetBodies
 } from './files.js'
 import { getConfig } from './config.js'
 
 // Options
 const config = getConfig()
-
-const paths = {
-	projectRoot: path.join(__dirname, '..', '..')
-}
 
 // State
 let cache = {
@@ -70,6 +61,7 @@ export const findMatchingPatchesForUrl = async ({
 		return patch.matchList.some(matcher => testMatcherAgainstUrl(url, matcher, config.accomodatingUrlMatching))
 	})
 	
+	// TODO: Broken
 	if (needBody){
 		matchingPatches = matchingPatches.map(async patch => {
 			try {
@@ -106,7 +98,6 @@ export const makeServer = (cfg = config) => {
 		console.info('Extension requested patches for url:', decodeURIComponent(req.url))
 		
 		let urlToPatch = decodeURIComponent(req.params.urlToPatch)
-		// console.debug({urlToPatch})
 
 		findMatchingPatchesForUrl({
 			url: urlToPatch,
@@ -116,8 +107,6 @@ export const makeServer = (cfg = config) => {
 			// needBody: true
 		}).then(patchArr => {
 			patchArr = cloneDeep(patchArr) // Copy before customising the response
-
-			// d_server('Query object:', req.query)
 
 			// ~ map of validating query commands/values 
 
@@ -131,18 +120,17 @@ export const makeServer = (cfg = config) => {
 			}
 			res.json(patchArr)
 		}).catch(err => {
-			console.debug(`Couldn't look for patches!`)
-
 			res.sendStatus(404)
 			// res.send(`Couldn't execute the patch search for URL`)
 		})
 	})
 	server.get('*', (req, res, next) => {
+		// Requests originate from the remote hosts' Javascript
 		res.header("Access-Control-Allow-Origin", "*")
 		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 		next()
 	})
-	server.get('*', express.static(cfg.storageDir))
+	server.get('*', express.static(cfg.storageDir)) // Serve the patch file bodies
 
 	return server
 }

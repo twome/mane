@@ -1,7 +1,5 @@
 const path = require('path')
 
-// import Enum from '../../node_modules/@twome/panrepo/enum.js'
-
 export let getConfig = () => {
 	let cfg = {
 		port: 1917,
@@ -10,14 +8,13 @@ export let getConfig = () => {
 		},
 		accomodatingUrlMatching: true,
 		recentUrlsHistoryLength: 500,
-		storageDir: path.join(process.cwd(), '/patches/'), //DateTime.local().toISO())
+		storageDir: path.join(process.cwd(), '/patches/'),
 		excessLengthIndicator: '-truncated---',
 		specialCommentToken: 'patch-urls',
 		fsCacheDir: '.cache',
 		fsCacheMatchListsFilename: 'fs-cache-matchlists.json',
 
 		// Enums
-		// patchJsonSchema: new Enum(['UserJavascriptAndCSS', 'Mane'])
 		patchJsonSchema: {
 			UserJavascriptAndCSS: 1,
 			Mane: 2

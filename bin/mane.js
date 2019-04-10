@@ -2,6 +2,8 @@
 
 /*
 	ES Modules must be supported by your version of Node to run this!
+
+	To use github.com/standard-things/esm, run `node -r esm bin/mane.js`
 */
 
 import { makeServer } from '../src/server/server.js'

@@ -21,23 +21,18 @@ export const getPatchAssetBodies = async (patch, fsPath = config.storageDir) => 
 	// TODO: parallelise
 	let reads
 	let assets = patch.assets.map(asset => {
-		console.debug('asset is ', asset)
-		console.debug(path.join(fsPath, asset.fileUrl))
 		if (!asset.fileUrl) return asset
 		reads.push(
 			readFile(path.join(fsPath, asset.fileUrl))
 				.then(body => {
-					console.debug('FOUND ASSET!!!')
 					asset.body = body
 				}).catch(err => {
-					console.debug('missing asset', path.join(fsPath, asset.fileUrl) ,err)
 					asset.body = null
 				})
 		)
 		return asset
 	})
 	await Promise.all(reads) // Wait until bodies for this asset all fetched
-	console.debug({assets})
 	return assets
 }
 
@@ -82,8 +77,11 @@ export let importPatchJson = async (url, scheme)=>{
 		throw Error('TODO')
 		/*
 			{
-				js: String,
-				css: String,
+				assets: Object[]{
+					fileUrl: String - relative to config.storageDir
+					assetType: Integer - Enum config.assetTypes
+				},
+				id: String
 				matchList: String[] (URL matches (can have * wildcards)),
 				options: {
 					on: Boolean
@@ -219,7 +217,6 @@ export const getAllPatches = async function({
 
 	// Check mem cache
 	if (memCache && memCache.patches.length && !forceRefresh){
-		console.debug('getAllPatches: Hit & using mem cache for entire patches list')
 		fromCache = 'memCache'
 
 		return Object.values(memCache.patches)
@@ -231,7 +228,6 @@ export const getAllPatches = async function({
 		// Read FS cache
 		try {
 			let previousFsCacheJson = await getFsCache({memCache, fsCacheFilePath})
-			console.debug('Found the FS cache file; reading that to find all patches.')
 			
 			// Instatiate all the JSON-ified plain objects into instances in memory
 			previousFsCacheJson.patches.forEach((plainObject) => {
@@ -268,15 +264,5 @@ export const updateAllCaches = async ({memCache, fsCacheFilePath, fsPath}={}) =>
 }
 
 
-let loadPatchFromFs = async (patchTitle, storageDir) => {
-	// ~ try load <title.js> and <title.css>
-	// ~ instatiate new patch
-}
-
-let saveEverythingTarball = () => {
-	// ~ save everything we can touch into a local FS tar.lz2 with a single JSON and optional non-text assets (images etc) for better compression
-}
-
-let clearFsStorage = () => {
-
-}
+// TODO saveEverythingTarball
+// ~ save everything we can touch into a local FS tar.lz2 with a single JSON and optional non-text assets (images etc) for better compression

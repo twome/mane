@@ -2,13 +2,6 @@ import { getRandomId, truncateMatchList } from './util.js'
 import { getConfig } from './config.js'
 let config = getConfig()
 
-// class Asset {
-	// constructor(opts){
-		// let opts = {}
-		// Object.assign(this, {})
-	// }
-// }
-
 export class Patch {
 	constructor(...args){
 		if (args.length === 1){
@@ -18,8 +11,6 @@ export class Patch {
 				})
 			} else if (typeof args[0] === 'object'){
 				var {
-					/*String*/js,
-					/*String*/css,
 					/*Asset[]*/assets = [],
 					/*String[]*/matchList,
 					/*String*/id,
@@ -38,12 +29,6 @@ export class Patch {
 			shortIdLength: 6
 		})
 
-		if (js){
-			this.js = js
-		}
-		if (css){
-			this.css = css
-		}
 		if (assets) this.assets = assets 
  		if (!matchList.hasOwnProperty('length') || matchList.length < 1){
 			throw Error('Patch must specify at least one url-match string')

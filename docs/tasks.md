@@ -1,3 +1,5 @@
+- BUG: git-track panrepo
+
 - BUG: changing cache.patches at all fucks up because getAllPatches doesn't check for diffs before using caches
 
 - FEAT: proper icon

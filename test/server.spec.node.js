@@ -8,7 +8,6 @@ const makeDir = util.promisify(fs.mkdir)
 const readDir = util.promisify(fs.readdir)
 
 const axios = require('axios')
-// const debug = require('debug')('spec: server')
 const trash = require('trash')
 
 import { 
@@ -84,10 +83,6 @@ describe('Server', function() {
 			]
 		]))
 	})
-	
-	beforeEach(async () => {
-		
-	})
 
 	describe('importing', () => {
 		it('imports patches from UserJavascriptAndCSS JSON exports', async () => {
@@ -141,7 +136,6 @@ describe('Server', function() {
 		// Prod-only to avoid unnecessary write-wear on HDD
 		itProd('writes patches to a directory', async () => {
 			archivePatches.forEach(patch => {
-				// console.debug('saving patch', patch)
 				savePatchToFs(patch, paths.sandbox)
 			})
 			let readed = await readFile(path.join(paths.sandbox, 'amazon.com*.css'), 'utf-8')
@@ -240,7 +234,6 @@ describe('Server', function() {
 			try {
 				response = await axios.get(`http://localhost:${config.port}${config.routes.patchesFor}/bandcamp.com`)	
 			} catch (err){
-				console.debug(`Couldn't get a connection to the local server!`)
 				return Error(`Couldn't get a connection to the local server!`)
 			}
 			assert.isArray(response.data)
@@ -260,24 +253,3 @@ describe('Server', function() {
 	})
 
 })
-
-/*
-let cache2 = {
-	patches: new Map(),
-	recentUrlsHistory: new Map(),
-	valid: false
-}
-
-let serverCfg = Object.assign(config, {
-	fsCacheFilePath: paths.fsCacheFilePath, 
-	memCache: cache2,
-	storageDir: paths.sandbox
-})
-let server2 = makeServer(serverCfg)
-server2.listen(9090, (err)=>{
-	if (err){
-		throw err
-	}
-	// Server ready function
-	console.debug('LISSNIN')
-})*/
