@@ -95,7 +95,7 @@ export const makeServer = (cfg = config) => {
 	let server = express()
 	
 	server.get(cfg.routes.patchesFor + '/:urlToPatch', (req, res) => {
-		console.info('Extension requested patches for url:', decodeURIComponent(req.url))
+		if (config.logLevel >= 2) console.info('Extension requested patches for url:', decodeURIComponent(req.url))
 		
 		let urlToPatch = decodeURIComponent(req.params.urlToPatch)
 
