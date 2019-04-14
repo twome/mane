@@ -24,22 +24,24 @@ for (let patch of patches){
 		let extension = fileExtension(asset.fileUrl)
 		let fullAssetPath = `${patchHost}/${asset.fileUrl}`
 
-		let assetReference
+		let importInvocation
 		if (extension === 'js'){
 			let el = document.createElement('script')
 			el.src = fullAssetPath
 			el.setAttribute('type', 'module')
-			assetReference = el
+			importInvocation = el
 		} else if (extension === 'css'){
 			let el = document.createElement('link')
 			el.href = fullAssetPath
 			el.setAttribute('rel', 'stylesheet')
-			assetReference = el
+			importInvocation = el
 		} else {
 			throw Error(`Unknown extension ${extension}`)
 		}
 
-		document.head.appendChild(assetReference)
+		importInvocation.dataset.maneMatchList = patch.matchList.join(',')
+		importInvocation.dataset.maneId = patch.id
+		document.head.appendChild(importInvocation)
 		if (logInjections) console.info(`Mane: injected ${asset.fileUrl}`)
 	}
 	
