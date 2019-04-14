@@ -1,6 +1,9 @@
 // Options
 let patchHost = 'http://localhost:1917'
 
+// State
+let app = {}
+
 let last = arr => arr.reverse()[0]
 let fileExtension = path => last(path.split('.'))
 
@@ -69,18 +72,63 @@ class NewPatch extends Component {
 				name: 'js',
 				human: 'JavaScript'
 			}
-		]
+		],
+		cssChecked = false,
+		jsChecked = false,
+		newPatchMatchList = location.host
 	}={}){
 		super(el, '.NewPatch')
-		Object.assign(this, {newFileToggles})
+		Object.assign(this, {newFileToggles, cssChecked, jsChecked, newPatchMatchList})
 
 		this.render()
+	}
+
+	render(){
+		let html = this.toHTML()
+		this.el.innerHTML = html
+
+		let newMatchListEl = this.el.querySelector('.NewPatch_matchList')
+
+		newMatchListEl.value = this.newPatchMatchList
+		this.el.querySelector('.NewPatch_patchFiles #css').checked = this.cssChecked
+		this.el.querySelector('.NewPatch_patchFiles #js').checked = this.jsChecked
+
+		let newMatchListHandler = () => {
+			this.newPatchMatchList = newMatchListEl.value
+		}
+
+		let createFilesHandler = () => {
+			let assetsToCreate = []
+			if (this.cssChecked) assetsToCreate.push({ 
+				assetType: 'css', 
+				fileUrl: this.newPatchMatchList + '.css'
+			})
+			if (this.jsChecked) assetsToCreate.push({ 
+				assetType: 'js', 
+				fileUrl: this.newPatchMatchList + '.js'
+			})
+
+			fetch(`${patchHost}/create-patch-file`, {
+				method: 'POST',
+				mode: 'cors',
+				headers: {
+					'Content-Type': 'application/json',
+		        },
+		        body: JSON.stringify(assetsToCreate)
+			}).then(res => {
+				// TODO
+				console.debug(res)
+			})
+		}
+		
+		this.el.querySelector('.js-createFiles').addEventListener('click', createFilesHandler)
+		newMatchListEl.addEventListener('changed', newMatchListHandler)
 	}
 
 	toHTML(){
 		let newFileToggles = this.newFileToggles.reduce((acc, toggle) => {
 			return acc + `
-			<label for="${toggle.name}" class="NewPatch_patchFile PillBtn">\n
+			<label for="${toggle.name}" class="NewPatch_patchFile">\n
 				<input type="checkbox" id="${toggle.name}" data-human-name="${toggle.human}">\n
 				${toggle.human}\n
 			</label>\n
@@ -89,10 +137,11 @@ class NewPatch extends Component {
 
 		let fullTemplate = `
 			<header class="NewPatch_header">New patch:</header>
+			<input type="text" class="NewPatch_matchList">
 			<div class="NewPatch_patchFiles">
 				${newFileToggles}
 			</div>
-			<button class="js-createFiles btn">Go</button>
+			<button class="js-createFiles btn">Create files</button>
 		`
 
 		return fullTemplate
@@ -115,30 +164,24 @@ class ActivePatches extends Component {
 
 	toHTML(){
 		let patches = [...this.patches.values()].reduce((acc, patch) => {
-			console.debug('patches')
 			let matchers = patch.matchList.reduce((acc, matcher)=>{
-				console.debug('matchers')
 				return acc + `
 					<span class="ActivePatches_matcher ${matcher === this.activeMatcher ? 'ActivePatches_matcher-active' : ''}"> \n
 						${matcher} \n
 					</span> \n
 				`
 			}, '')
-			console.debug({matchers})
-			console.debug({patch})
 			let assets = patch.assets.reduce((acc, asset) => {
-				console.debug('assets')
 				let fullAssetPath = `${patchHost}/${asset.fileUrl}`
 				return acc + `
-					<a href="${fullAssetPath}">${fileExtension(asset.fileUrl).toUpperCase()}</a>
+					<a href="${fullAssetPath}" class="ActivePatches_asset">${fileExtension(asset.fileUrl).toUpperCase()}</a>
 				`
 			}, '')
-			console.debug({assets})
 
 			return acc + `
 				<li class="ActivePatches_patch" data-patch-id="${patch.id}"> \n
 					${matchers}
-					<span class="PillBtn-small">
+					<span class="ActivePatches_assets">
 						${assets}
 					</span>
 				</li> \n
@@ -160,19 +203,10 @@ ActivePatches.selector = '.ActivePatches'
 
 // State
 let instances = new Set()
+let componentTypes = [NewPatch, ActivePatches]
 
-
-for (let el of [...document.querySelectorAll(NewPatch.selector)]){
-	instances.add(new NewPatch(el))
+for (let type of componentTypes){
+	for (let el of [...document.querySelectorAll(type.selector)]){
+		instances.add(new type(el))
+	}
 }
-
-for (let el of [...document.querySelectorAll(ActivePatches.selector)]){
-	instances.add(new ActivePatches(el))
-}
-
-let handler = () => {
-	for (let instance of instances){
-		instance.el.innerHTML = instance.toHTML()
-	}	
-}
-setTimeout(handler, 3000)

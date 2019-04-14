@@ -15,9 +15,14 @@
  */
 body {
  	max-width: 350px;
+ 	min-width: 300px;
  	max-height: 700px;
  	box-shadow: 0px 2px 4px 0px hsla(0,0%,0%,0.3);
  	margin: 3em auto;
+}
+
+* {
+	box-sizing: border-box;
 }
 
 body {
@@ -38,11 +43,10 @@ input[type="checkbox"] {
 	margin-right: calc(2em + 0.6em); /* MAGIC NUMBER */
 }
 input[type="checkbox"]::after {
-	content: '✓';
+	content: '\2713';
 	display: inline-flex;
 
 	position: relative;
-	top: -0.5em; /* 50% offset for centered parent */
 
 	width: 1em;
 	height: 1em;
@@ -66,6 +70,7 @@ input[type="checkbox"]:checked::after {
 	/* For the checkmark */
 	transition: color 200ms;
 }
+input[type="checkbox"]:focus::after,
 input[type="checkbox"]:hover::after {
 	border-color: hsl(39, 100%, 50%);
 	box-shadow: inset 1px 1px 2px 0px hsla(39, 100%, 50%, 0.2);
@@ -74,19 +79,8 @@ input[type="checkbox"]:active::after {
 	background-color: hsl(39, 100%, 81%);
 }
 
-.inactiveMatch {
-	color: hsla(0, 0%, 0%, 0.3);
-}
 
-.NewPatch_patchFiles {
-	display: flex;
 
-	flex-direction: horizontal;
-	align-items: center;
-	justify-content: center;
-}
-
-/* .NewPatch_patchFile */
 .PillBtn {
 	display: flex;
 	padding: 0.3em;
@@ -114,14 +108,68 @@ input[type="checkbox"]:active::after {
 	box-shadow: none;
 }
 
+
+
+.ActivePatches {
+	background-color: hsla(29, 100%, 6%, 1);
+	color: white;
+	padding: 0.4em;
+}
+
 .ActivePatches_list {
-	padding: 0;
+	padding: 0.4em;
 	margin: 0;
-	background: hsla(0, 0%, 13%, 1);
+	font-family: monospace;
+}
+
+.ActivePatches_list a {
+	font-size: 0.8em;
+	color: white;
+	border: 1px solid white;
+	border-radius: 3px;
+	text-decoration: none;
+	padding: 0.2em;
+}
+.ActivePatches_list a:hover {
+	color: hsla(33, 93%, 54%, 1);
+	border-color: hsla(33, 93%, 54%, 1);
 }
 
 .ActivePatches_patch {
-	color: white;
+	color: hsla(38, 93%, 77%, 1);
 	list-style-type: none;
 	display: block;
+}
+
+
+
+.NewPatch {
+	padding: 0.4em;
+}
+
+.NewPatch_matchList {
+	width: 100%;
+	margin: 0.62em auto;
+	position: relative;
+	display: block;
+	padding: 1em;
+}
+
+.NewPatch_patchFiles {
+	display: flex;
+
+	flex-direction: horizontal;
+	align-items: center;
+	justify-content: center;
+}
+
+.NewPatch_patchFile {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin-left: 0.6em;
+	margin-right: 0.6em;
+}
+.NewPatch_patchFile input[type="checkbox"]::after {
+	top: -0.5em; // To account for vertical centering
 }
