@@ -17,6 +17,12 @@
 			"js": ["injector.js"]
 		}
 	],
+
+	"browser_action": {
+		"default_icon": "images/deep-palm.png",
+		"default_title": "Mane",
+		"default_popup": "popup.html"
+	},
 	
 	// Metadata for Firefox identification
 	"applications": {

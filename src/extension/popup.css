@@ -1,0 +1,127 @@
+/* 
+	Colors
+	dark - hsla(29, 100%, 6%, 1)
+	light - hsla(69, 100%, 96%, 1)
+	green - hsla(97, 100%, 75%, 1)
+	brown - hsla(24, 94%, 14%, 1)
+	orange - hsla(33, 93%, 54%, 1)
+	tan - hsla(38, 93%, 77%, 1)
+ */
+
+
+
+/* 
+	TEMP DEV-ONLY
+ */
+body {
+ 	max-width: 350px;
+ 	max-height: 700px;
+ 	box-shadow: 0px 2px 4px 0px hsla(0,0%,0%,0.3);
+ 	margin: 3em auto;
+}
+
+body {
+	font-family: sans-serif;
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+input[type="checkbox"] {
+	appearance: none;
+	-webkit-appearance: none;
+	-firefox-appearance: none;
+	-gecko-appearance: none;
+	outline: none;
+	width: 0;
+	height: 0;
+	margin: 0;
+	margin-right: calc(2em + 0.6em); /* MAGIC NUMBER */
+}
+input[type="checkbox"]::after {
+	content: '✓';
+	display: inline-flex;
+
+	position: relative;
+	top: -0.5em; /* 50% offset for centered parent */
+
+	width: 1em;
+	height: 1em;
+	font-size: 2em;
+
+	background-color: white;
+	border: 1px solid hsla(0,0%,0%,0.3);
+	border-radius: 3px;
+	box-shadow: inset 1px 1px 2px 0px hsla(0,0%,0%,0.1);
+	cursor: pointer;
+
+	transition: color 200ms;
+	color: transparent; /* For the checkmark */
+
+	align-items: center;
+	justify-content: center;
+}
+input[type="checkbox"]:checked::after {
+	color: hsla(0, 0%, 13%, 1);
+
+	/* For the checkmark */
+	transition: color 200ms;
+}
+input[type="checkbox"]:hover::after {
+	border-color: hsl(39, 100%, 50%);
+	box-shadow: inset 1px 1px 2px 0px hsla(39, 100%, 50%, 0.2);
+}
+input[type="checkbox"]:active::after {
+	background-color: hsl(39, 100%, 81%);
+}
+
+.inactiveMatch {
+	color: hsla(0, 0%, 0%, 0.3);
+}
+
+.NewPatch_patchFiles {
+	display: flex;
+
+	flex-direction: horizontal;
+	align-items: center;
+	justify-content: center;
+}
+
+/* .NewPatch_patchFile */
+.PillBtn {
+	display: flex;
+	padding: 0.3em;
+	border: 1px solid hsla(0,0%,0%,0.3);
+	cursor: pointer;
+	user-select: none;
+
+	flex-direction: horizontal;
+	align-items: center;
+	justify-content: space-between;
+}
+.PillBtn:first-of-type {
+	border-top-left-radius: 0.5em;
+	border-bottom-left-radius: 0.5em;
+	padding-left: 0.4em;
+}
+.PillBtn:last-of-type {
+	border-left: none;
+	border-top-right-radius: 0.5em;
+	border-bottom-right-radius: 0.5em;
+	padding-right: 0.4em;
+}
+.PillBtn input[type="checkbox"]::after {
+	border: solid 1px hsla(0,0%,0%,0.1);
+	box-shadow: none;
+}
+
+.ActivePatches_list {
+	padding: 0;
+	margin: 0;
+	background: hsla(0, 0%, 13%, 1);
+}
+
+.ActivePatches_patch {
+	color: white;
+	list-style-type: none;
+	display: block;
+}
