@@ -21,6 +21,10 @@ body {
  	margin: 3em auto;
 }
 
+
+/* 
+	Elements
+*/
 * {
 	box-sizing: border-box;
 }
@@ -55,7 +59,6 @@ input[type="checkbox"]::after {
 	background-color: white;
 	border: 1px solid hsla(0,0%,0%,0.3);
 	border-radius: 3px;
-	box-shadow: inset 1px 1px 2px 0px hsla(0,0%,0%,0.1);
 	cursor: pointer;
 
 	transition: color 200ms;
@@ -66,6 +69,7 @@ input[type="checkbox"]::after {
 }
 input[type="checkbox"]:checked::after {
 	color: hsla(0, 0%, 13%, 1);
+	text-shadow: 1px 1px 0px hsla(33, 93%, 54%, 1);
 
 	/* For the checkmark */
 	transition: color 200ms;
@@ -73,14 +77,74 @@ input[type="checkbox"]:checked::after {
 input[type="checkbox"]:focus::after,
 input[type="checkbox"]:hover::after {
 	border-color: hsl(39, 100%, 50%);
-	box-shadow: inset 1px 1px 2px 0px hsla(39, 100%, 50%, 0.2);
 }
 input[type="checkbox"]:active::after {
 	background-color: hsl(39, 100%, 81%);
 }
 
+section {
+	padding: 0.4em;
+	padding-top: 0.62em;
+	padding-bottom: 0.62em;
+}
 
+/* 
+	Objects
+*/
+.btn {
+	border: 1px solid hsla(29, 100%, 6%, 1);
+	color: hsla(29, 100%, 6%, 1);
+	border-radius: 3px;
+	font-size: 0.8em;
+	padding: 0.6em 1em;
+	cursor: pointer;
+	font-weight: 700;
+	font-family: sans-serif;
 
+	transition: background-color 50ms;
+}
+.btn:hover {
+	background-color: hsla(38, 93%, 77%, 1);
+}
+.btn-disabled {
+	opacity: 0.2;
+	/* border-color: hsla(29, 100%, 6%, 0.3); */
+	/* color: hsla(29, 100%, 6%, 0.3); */
+	cursor: not-allowed;
+}
+.btn-disabled:hover {
+	background-color: inherit;
+}
+
+.spaceyHeader {
+	color: hsla(69, 100%, 96%, 0.52);
+	text-align: center;
+	text-transform: uppercase;
+	letter-spacing: 2.1px;
+	font-weight: 300;
+	font-size: 0.8em;
+}
+.spaceyHeader-onLight {
+	color: hsla(29, 100%, 6%, 1);
+}
+
+.boxLink {
+	display: inline-block;
+	font-size: 0.8em;
+	color: white;
+	border: 1px solid white;
+	border-radius: 3px;
+	text-decoration: none;
+	padding: 0.2em 0.4em;
+}
+.boxLink:hover {
+	color: hsla(97, 100%, 75%, 1);
+	border-color: hsla(97, 100%, 75%, 1);
+}
+
+/* 
+	Components
+*/
 .PillBtn {
 	display: flex;
 	padding: 0.3em;
@@ -113,26 +177,12 @@ input[type="checkbox"]:active::after {
 .ActivePatches {
 	background-color: hsla(29, 100%, 6%, 1);
 	color: white;
-	padding: 0.4em;
 }
 
 .ActivePatches_list {
 	padding: 0.4em;
 	margin: 0;
 	font-family: monospace;
-}
-
-.ActivePatches_list a {
-	font-size: 0.8em;
-	color: white;
-	border: 1px solid white;
-	border-radius: 3px;
-	text-decoration: none;
-	padding: 0.2em;
-}
-.ActivePatches_list a:hover {
-	color: hsla(33, 93%, 54%, 1);
-	border-color: hsla(33, 93%, 54%, 1);
 }
 
 .ActivePatches_patch {
@@ -144,7 +194,7 @@ input[type="checkbox"]:active::after {
 
 
 .NewPatch {
-	padding: 0.4em;
+
 }
 
 .NewPatch_matchList {
@@ -153,6 +203,9 @@ input[type="checkbox"]:active::after {
 	position: relative;
 	display: block;
 	padding: 1em;
+	/* background-color: hsla(38, 93%, 77%, 1); */
+	border: 1px solid #eee;
+	border-radius: 3px;
 }
 
 .NewPatch_patchFiles {
@@ -164,14 +217,15 @@ input[type="checkbox"]:active::after {
 }
 
 .NewPatch_patchFile {
+	font-size: 0.8em;
+	height: 2rem;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	margin-left: 0.6em;
-	margin-right: 0.6em;
+	padding-right: 1em;
 
 	cursor: pointer;
 }
 .NewPatch_patchFile input[type="checkbox"]::after {
-	top: -0.5em; // To account for vertical centering
+	top: -0.5em; /* To account for vertical centering */
 }

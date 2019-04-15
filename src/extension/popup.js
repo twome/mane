@@ -67,7 +67,7 @@ class NewPatch extends Component {
 		newFileToggles = [
 			{
 				name: 'css',
-				human: 'Style'
+				human: 'CSS'
 			},{
 				name: 'js',
 				human: 'JavaScript'
@@ -81,6 +81,17 @@ class NewPatch extends Component {
 		Object.assign(this, {newFileToggles, cssChecked, jsChecked, newPatchMatchList})
 
 		this.render()
+	}
+
+	/* HACK */
+	renderCreateButton(){
+		console.debug('boing', this.cssChecked, this.jsChecked)
+		let createFilesEl = this.el.querySelector('.js-createFiles')
+		if (!this.cssChecked && !this.jsChecked){
+			createFilesEl.classList.add('btn-disabled')
+		} else {
+			createFilesEl.classList.remove('btn-disabled')
+		}
 	}
 
 	registerHandlers(){
@@ -123,6 +134,8 @@ class NewPatch extends Component {
 			console.debug('assettpye', this)
 			this.cssChecked = cssAssetEl.checked
 			this.jsChecked = jsAssetEl.checked
+
+			this.renderCreateButton()
 		}
 		
 		createFilesEl.addEventListener('click', createFilesHandler)
@@ -132,18 +145,18 @@ class NewPatch extends Component {
 	}
 
 	render(){
-		// Update VM
-		let cssAssetEl = this.el.querySelector('.NewPatch_patchFiles #css')
-		let jsAssetEl = this.el.querySelector('.NewPatch_patchFiles #js')
-		if (cssAssetEl) cssAssetEl.checked = this.cssChecked
-		if (jsAssetEl) jsAssetEl.checked = this.jsChecked
-
 		// Update view
 		let html = this.toHTML()
 		this.el.innerHTML = html
 
 		let newMatchListEl = this.el.querySelector('.NewPatch_matchList')
 		newMatchListEl.value = this.newPatchMatchList
+		
+		let cssAssetEl = this.el.querySelector('.NewPatch_patchFiles #css')
+		let jsAssetEl = this.el.querySelector('.NewPatch_patchFiles #js')
+		cssAssetEl.checked = this.cssChecked
+		jsAssetEl.checked = this.jsChecked
+		this.renderCreateButton()
 
 		this.registerHandlers()
 	}
@@ -159,12 +172,12 @@ class NewPatch extends Component {
 		}, '')
 
 		let fullTemplate = `
-			<header class="NewPatch_header">New patch for:</header>
-			<input type="text" class="NewPatch_matchList">
-			<div class="NewPatch_patchFiles">
-				${newFileToggles}
+			<header class="NewPatch_header spaceyHeader spaceyHeader-onLight">New patch for:</header>\n
+			<input type="text" class="NewPatch_matchList">\n
+			<div class="NewPatch_patchFiles">\n
+				${newFileToggles}\n
+				<button class="js-createFiles btn">Create files</button>\n
 			</div>
-			<button class="js-createFiles btn">Create files</button>
 		`
 
 		return fullTemplate
@@ -228,27 +241,29 @@ class ActivePatches extends Component {
 			let assets = patch.assets.reduce((acc, asset) => {
 				let fullAssetPath = `${asset.fileUrl}`
 				return acc + `
-					<a href="${fullAssetPath}" class="ActivePatches_asset">${fileExtension(asset.fileUrl).toUpperCase()}</a>
+					<a href="${fullAssetPath}" class="ActivePatches_asset boxLink">\n
+						${fileExtension(asset.fileUrl).toUpperCase()}\n
+					</a>\n
 				`
 			}, '')
 
 			return acc + `
-				<li class="ActivePatches_patch" data-patch-id="${patch.id}"> \n
-					${matchers}
-					<span class="ActivePatches_assets">
-						${assets}
-					</span>
+				<li class="ActivePatches_patch" data-patch-id="${patch.id}">\n
+					${matchers}\n
+					<span class="ActivePatches_assets">\n
+						${assets}\n
+					</span>\n
 				</li> \n
 			`
 		}, '')
 
 		let fullTemplate = `
-			<header class="ActivePatches_header">
-				Active patches:
-			</header>
-			<ul class="ActivePatches_list">
-				${patches}
-			</ul>
+			<header class="ActivePatches_header spaceyHeader">\n
+				Active patches:\n
+			</header>\n
+			<ul class="ActivePatches_list">\n
+				${patches}\n
+			</ul>\n
 		`
 		return fullTemplate
 	}
