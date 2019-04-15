@@ -169,6 +169,8 @@ input[type="checkbox"]:active::after {
 	justify-content: center;
 	margin-left: 0.6em;
 	margin-right: 0.6em;
+
+	cursor: pointer;
 }
 .NewPatch_patchFile input[type="checkbox"]::after {
 	top: -0.5em; // To account for vertical centering

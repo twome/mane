@@ -1,7 +1,7 @@
 // Options
 let patchHost = 'http://localhost:1917'
 
-// State
+// App-wide 'global' state
 let app = {}
 
 let last = arr => arr.reverse()[0]
@@ -73,7 +73,7 @@ class NewPatch extends Component {
 				human: 'JavaScript'
 			}
 		],
-		cssChecked = false,
+		cssChecked = true, // It's probably overall more likely that users want to simply hide an element
 		jsChecked = false,
 		newPatchMatchList = location.host
 	}={}){
@@ -83,21 +83,20 @@ class NewPatch extends Component {
 		this.render()
 	}
 
-	render(){
-		let html = this.toHTML()
-		this.el.innerHTML = html
-
+	registerHandlers(){
 		let newMatchListEl = this.el.querySelector('.NewPatch_matchList')
-
-		newMatchListEl.value = this.newPatchMatchList
-		this.el.querySelector('.NewPatch_patchFiles #css').checked = this.cssChecked
-		this.el.querySelector('.NewPatch_patchFiles #js').checked = this.jsChecked
+		let createFilesEl = this.el.querySelector('.js-createFiles')
+		let cssAssetEl = this.el.querySelector('.NewPatch_patchFile #css')
+		let jsAssetEl = this.el.querySelector('.NewPatch_patchFile #js')
 
 		let newMatchListHandler = () => {
 			this.newPatchMatchList = newMatchListEl.value
+			console.debug('matchlist', this)
 		}
 
 		let createFilesHandler = () => {
+			console.debug('creatfiles', this)
+
 			let assetsToCreate = []
 			if (this.cssChecked) assetsToCreate.push({ 
 				assetType: 'css', 
@@ -117,12 +116,36 @@ class NewPatch extends Component {
 		        body: JSON.stringify(assetsToCreate)
 			}).then(res => {
 				// TODO
-				console.debug(res)
 			})
 		}
+
+		let assetTypesHandler = () => {
+			console.debug('assettpye', this)
+			this.cssChecked = cssAssetEl.checked
+			this.jsChecked = jsAssetEl.checked
+		}
 		
-		this.el.querySelector('.js-createFiles').addEventListener('click', createFilesHandler)
-		newMatchListEl.addEventListener('changed', newMatchListHandler)
+		createFilesEl.addEventListener('click', createFilesHandler)
+		newMatchListEl.addEventListener('change', newMatchListHandler)
+		let assetTypes = [cssAssetEl, jsAssetEl]
+		assetTypes.forEach(el => el.addEventListener('change', assetTypesHandler))
+	}
+
+	render(){
+		// Update VM
+		let cssAssetEl = this.el.querySelector('.NewPatch_patchFiles #css')
+		let jsAssetEl = this.el.querySelector('.NewPatch_patchFiles #js')
+		if (cssAssetEl) cssAssetEl.checked = this.cssChecked
+		if (jsAssetEl) jsAssetEl.checked = this.jsChecked
+
+		// Update view
+		let html = this.toHTML()
+		this.el.innerHTML = html
+
+		let newMatchListEl = this.el.querySelector('.NewPatch_matchList')
+		newMatchListEl.value = this.newPatchMatchList
+
+		this.registerHandlers()
 	}
 
 	toHTML(){
@@ -136,7 +159,7 @@ class NewPatch extends Component {
 		}, '')
 
 		let fullTemplate = `
-			<header class="NewPatch_header">New patch:</header>
+			<header class="NewPatch_header">New patch for:</header>
 			<input type="text" class="NewPatch_matchList">
 			<div class="NewPatch_patchFiles">
 				${newFileToggles}
@@ -156,10 +179,41 @@ class ActivePatches extends Component {
 		super(el, '.ActivePatches')
 		Object.assign(this, {patches})
 
-		this.patches = getActivePatches()
-
+		// TODO: Highlight the active matcher within each matchList (send from server?)
 		this.activeMatcher = null
 		this.render()
+	}
+
+	registerHandlers(){
+		let assetEls = this.el.querySelectorAll('.ActivePatches_asset')
+		assetEls.forEach(el => {
+			el.addEventListener('click', (event) => {
+				console.debug('active patch open event', this)
+
+				// TODO: Still allow default open-in-new-tab functionality
+				event.preventDefault()
+
+				// Send a message to the native app / server asking to open this file locally using the OS' default application (for quickly opening your code editor)
+				fetch(`${patchHost}/open-file/${encodeURIComponent(el.href)}`, {
+					method: 'GET',
+					mode: 'cors',
+					headers: { 
+						'Content-Type': 'application.json'
+					}
+				})
+			})
+		})
+	}
+
+	render(){
+		// Update VM
+		this.patches = getActivePatches()
+
+		// Update view
+		let html = this.toHTML()
+		this.el.innerHTML = html
+
+		this.registerHandlers()
 	}
 
 	toHTML(){
@@ -172,7 +226,7 @@ class ActivePatches extends Component {
 				`
 			}, '')
 			let assets = patch.assets.reduce((acc, asset) => {
-				let fullAssetPath = `${patchHost}/${asset.fileUrl}`
+				let fullAssetPath = `${asset.fileUrl}`
 				return acc + `
 					<a href="${fullAssetPath}" class="ActivePatches_asset">${fileExtension(asset.fileUrl).toUpperCase()}</a>
 				`
@@ -190,7 +244,7 @@ class ActivePatches extends Component {
 
 		let fullTemplate = `
 			<header class="ActivePatches_header">
-				Active:
+				Active patches:
 			</header>
 			<ul class="ActivePatches_list">
 				${patches}
