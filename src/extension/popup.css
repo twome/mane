@@ -12,28 +12,36 @@
 
 
 /* 
-	TEMP DEV-ONLY
- */
-body {
- 	max-width: 350px;
- 	min-width: 300px;
- 	max-height: 700px;
- 	box-shadow: 0px 2px 4px 0px hsla(0,0%,0%,0.3);
- 	margin: 3em auto;
-}
-
-
-/* 
 	Elements
 */
 * {
 	box-sizing: border-box;
 }
 
+body, body {
+	padding: 0;
+	margin: 0;
+	width: 100%;
+	height: 100%;
+}
+
 body {
 	font-family: sans-serif;
 	font-size: 14px;
 	line-height: 1.5;
+}
+
+/* 
+	TEMP DEV-ONLY
+ */
+@media screen and (min-width: 700px) {
+	body {
+	 	max-width: 350px;
+	 	min-width: 300px;
+	 	max-height: 700px;
+	 	box-shadow: 0px 2px 4px 0px hsla(0,0%,0%,0.3);
+	 	margin: 3em auto;
+	}	
 }
 
 input[type="checkbox"] {
@@ -107,6 +115,9 @@ section {
 }
 .btn:hover {
 	background-color: hsla(38, 93%, 77%, 1);
+}
+.btn:active {
+	background-color: hsla(33, 93%, 54%, 1);
 }
 .btn-disabled {
 	opacity: 0.2;
@@ -187,13 +198,52 @@ section {
 .ActivePatches_list {
 	padding: 0.4em;
 	margin: 0;
-	font-family: monospace;
+	font-family: Inconsolata, Courier New, monospace;
 }
 
 .ActivePatches_patch {
-	color: hsla(38, 93%, 77%, 1);
 	list-style-type: none;
-	display: block;
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 0.3em;
+}
+.ActivePatches_matchList {
+	/* TODO: We want this to remain one line long and scroll horizontally "underneath" the asset links */
+	position: relative;
+	overflow-x: hidden;
+	text-overflow: ellipsis; 
+	white-space: nowrap;
+	scrollbar-width: none; /* This list is only one line high; a visible scrollbar will make it unreadable. */
+	display: inline-flex; /* Ignore the source-code inline spaces from the inner content. */
+}
+.ActivePatches_assets {
+	position: relative; /* Purely for the pos:abs ::after */
+}
+.ActivePatches_assets::after {
+	content: '';
+	position: absolute;
+	right: 100%;
+	top: 0;
+	width: 3em;
+	height: 100%;
+	background-image: linear-gradient(90deg, transparent 0%, hsla(30, 100%, 6%, 1) 100%);
+}
+.ActivePatches_matcher {
+	color: hsla(69, 100%, 96%, 1);
+	display: inline-flex; /* Ignore the source-code inline spaces from the inner content. */
+}
+.ActivePatches_matcher-active {
+	color: hsla(38, 93%, 77%, 1);
+}
+.ActivePatches_matcher::after {
+	content: ',';
+	display: inline;
+	margin-right: 0.4em;
+}
+.ActivePatches_matcher:last-child::after {
+	content: initial;
+	display: none;
+	margin-right: 0;
 }
 
 
@@ -204,10 +254,11 @@ section {
 
 .NewPatch_matchList {
 	width: 100%;
+	font-size: 0.9em;
 	margin: 0.62em auto;
 	position: relative;
 	display: block;
-	padding: 1em;
+	padding: 0.62em;
 	/* background-color: hsla(38, 93%, 77%, 1); */
 	border: 1px solid #eee;
 	border-radius: 3px;

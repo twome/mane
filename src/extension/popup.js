@@ -85,7 +85,6 @@ class NewPatch extends Component {
 
 	/* HACK */
 	renderCreateButton(){
-		console.debug('boing', this.cssChecked, this.jsChecked)
 		let createFilesEl = this.el.querySelector('.js-createFiles')
 		if (!this.cssChecked && !this.jsChecked){
 			createFilesEl.classList.add('btn-disabled')
@@ -103,12 +102,9 @@ class NewPatch extends Component {
 
 		let newMatchListHandler = () => {
 			this.newPatchMatchList = newMatchListEl.value
-			console.debug('matchlist', this)
 		}
 
 		let createFilesHandler = () => {
-			console.debug('creatfiles', this)
-
 			let assetsToCreate = []
 			if (this.cssChecked) assetsToCreate.push({ 
 				assetType: 'css', 
@@ -132,7 +128,6 @@ class NewPatch extends Component {
 		}
 
 		let assetTypesHandler = () => {
-			console.debug('assettpye', this)
 			this.cssChecked = cssAssetEl.checked
 			this.jsChecked = jsAssetEl.checked
 
@@ -256,8 +251,10 @@ class ActivePatches extends Component {
 			}, '')
 
 			return acc + `
-				<li class="ActivePatches_patch" data-patch-id="${patch.id}">
-					${matchers}
+				<li class="ActivePatches_patch" data-patch-id="${patch.id}" title="${patch.matchList.join(',')}">
+					<span class="ActivePatches_matchList">
+						${matchers}
+					</span>
 					<span class="ActivePatches_assets">
 						${assets}
 					</span>
