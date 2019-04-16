@@ -1,5 +1,6 @@
 /* 
-	Colors
+	## Color palette 
+
 	dark - hsla(29, 100%, 6%, 1)
 	light - hsla(69, 100%, 96%, 1)
 	green - hsla(97, 100%, 75%, 1)
@@ -100,6 +101,7 @@ section {
 	cursor: pointer;
 	font-weight: 700;
 	font-family: sans-serif;
+	user-select: none;
 
 	transition: background-color 50ms;
 }
@@ -117,12 +119,13 @@ section {
 }
 
 .spaceyHeader {
+	font-size: 0.8em;
 	color: hsla(69, 100%, 96%, 0.52);
 	text-align: center;
 	text-transform: uppercase;
 	letter-spacing: 2.1px;
 	font-weight: 300;
-	font-size: 0.8em;
+	user-select: none;
 }
 .spaceyHeader-onLight {
 	color: hsla(29, 100%, 6%, 1);
@@ -136,6 +139,8 @@ section {
 	border-radius: 3px;
 	text-decoration: none;
 	padding: 0.2em 0.4em;
+
+	user-select: none;
 }
 .boxLink:hover {
 	color: hsla(97, 100%, 75%, 1);
@@ -224,6 +229,7 @@ section {
 	justify-content: center;
 	padding-right: 1em;
 
+	user-select: none;
 	cursor: pointer;
 }
 .NewPatch_patchFile input[type="checkbox"]::after {

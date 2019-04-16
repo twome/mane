@@ -89,6 +89,7 @@ class NewPatch extends Component {
 		let createFilesEl = this.el.querySelector('.js-createFiles')
 		if (!this.cssChecked && !this.jsChecked){
 			createFilesEl.classList.add('btn-disabled')
+			createFilesEl.title = 'Must select at least one type of file to create; CSS or JS'
 		} else {
 			createFilesEl.classList.remove('btn-disabled')
 		}
@@ -164,19 +165,22 @@ class NewPatch extends Component {
 	toHTML(){
 		let newFileToggles = this.newFileToggles.reduce((acc, toggle) => {
 			return acc + `
-			<label for="${toggle.name}" class="NewPatch_patchFile">\n
-				<input type="checkbox" id="${toggle.name}" data-human-name="${toggle.human}">\n
-				${toggle.human}\n
-			</label>\n
+			<label for="${toggle.name}" class="NewPatch_patchFile">
+				<input type="checkbox" id="${toggle.name}" data-human-name="${toggle.human}">
+				${toggle.human}
+			</label>
 			`
 		}, '')
 
 		let fullTemplate = `
-			<header class="NewPatch_header spaceyHeader spaceyHeader-onLight">New patch for:</header>\n
-			<input type="text" class="NewPatch_matchList">\n
-			<div class="NewPatch_patchFiles">\n
-				${newFileToggles}\n
-				<button class="js-createFiles btn">Create files</button>\n
+			<header class="NewPatch_header spaceyHeader spaceyHeader-onLight">New patch for:</header>
+			<input type="text" class="NewPatch_matchList" 
+				title="Comma-separated list of URL matchers (regular expressions) to trigger this patch's insertion into webpages"
+				placeholder="*.bandcamp.com,sa.org.au"
+			>
+			<div class="NewPatch_patchFiles">
+				${newFileToggles}
+				<button class="js-createFiles btn">Create files</button>
 			</div>
 		`
 
@@ -193,7 +197,7 @@ class ActivePatches extends Component {
 		Object.assign(this, {patches})
 
 		// TODO: Highlight the active matcher within each matchList (send from server?)
-		this.activeMatcher = null
+		this.activeMatcher = 'www.google.com' // TEMP TEST
 		this.render()
 	}
 
@@ -233,37 +237,41 @@ class ActivePatches extends Component {
 		let patches = [...this.patches.values()].reduce((acc, patch) => {
 			let matchers = patch.matchList.reduce((acc, matcher)=>{
 				return acc + `
-					<span class="ActivePatches_matcher ${matcher === this.activeMatcher ? 'ActivePatches_matcher-active' : ''}"> \n
-						${matcher} \n
-					</span> \n
+					<span class="ActivePatches_matcher ${matcher === this.activeMatcher ? 'ActivePatches_matcher-active' : ''}"
+						${matcher === this.activeMatcher ? 'title="The matcher which activated this patch for this current page\'s URL"' : ''}
+					>
+						${matcher} 
+					</span> 
 				`
 			}, '')
 			let assets = patch.assets.reduce((acc, asset) => {
 				let fullAssetPath = `${asset.fileUrl}`
 				return acc + `
-					<a href="${fullAssetPath}" class="ActivePatches_asset boxLink">\n
-						${fileExtension(asset.fileUrl).toUpperCase()}\n
-					</a>\n
+					<a href="${fullAssetPath}" class="ActivePatches_asset boxLink"
+						title="Open file in your default native application"
+					>
+						${fileExtension(asset.fileUrl).toUpperCase()}
+					</a>
 				`
 			}, '')
 
 			return acc + `
-				<li class="ActivePatches_patch" data-patch-id="${patch.id}">\n
-					${matchers}\n
-					<span class="ActivePatches_assets">\n
-						${assets}\n
-					</span>\n
-				</li> \n
+				<li class="ActivePatches_patch" data-patch-id="${patch.id}">
+					${matchers}
+					<span class="ActivePatches_assets">
+						${assets}
+					</span>
+				</li> 
 			`
 		}, '')
 
 		let fullTemplate = `
-			<header class="ActivePatches_header spaceyHeader">\n
-				Active patches:\n
-			</header>\n
-			<ul class="ActivePatches_list">\n
-				${patches}\n
-			</ul>\n
+			<header class="ActivePatches_header spaceyHeader">
+				Active patches:
+			</header>
+			<ul class="ActivePatches_list">
+				${patches}
+			</ul>
 		`
 		return fullTemplate
 	}
