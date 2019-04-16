@@ -1,3 +1,5 @@
+- FEAT: implement server endpoints for extension (add new patch, open asset in native, specify the active matcher)
+
 - BUG: changing cache.patches at all fucks up because getAllPatches doesn't check for diffs before using caches
 
 - FEAT: proper icon
@@ -31,6 +33,10 @@
 - FEAT: set patch storage dir from server CL arg & extension popup
 
 - FEAT: executable or CL arg to back up all patches into json
+	- export to UJS&CSS, GreaseMonkey etc formats
+
+- FEAT: save the urls / metadata of remote patches as a JSON file
+	- MUST forewarn users of danger of remote patches
 
 ## extension
 

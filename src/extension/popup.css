@@ -144,12 +144,12 @@ section {
 
 .boxLink {
 	display: inline-block;
-	font-size: 0.8em;
+	font-size: 0.9em;
 	color: white;
 	border: 1px solid white;
 	border-radius: 3px;
 	text-decoration: none;
-	padding: 0.2em 0.4em;
+	padding: 0em 0.3em;
 
 	user-select: none;
 }
@@ -206,7 +206,21 @@ section {
 	display: flex;
 	justify-content: space-between;
 	margin-bottom: 0.3em;
+
+	position: relative;
 }
+/* Soft, fading horizontal separator line */
+/* .ActivePatches_patch::before {
+	content: '';
+	position: absolute;
+	height: 1px;
+	width: 100%;
+	background-image: linear-gradient(90deg, 
+		transparent 0%, 
+		hsla(0, 0%, 100%, 0.2) 50%, 
+		transparent 100%
+	);
+} */
 .ActivePatches_matchList {
 	/* TODO: We want this to remain one line long and scroll horizontally "underneath" the asset links */
 	position: relative;
@@ -217,6 +231,7 @@ section {
 	display: inline-flex; /* Ignore the source-code inline spaces from the inner content. */
 }
 .ActivePatches_assets {
+	white-space: nowrap;
 	position: relative; /* Purely for the pos:abs ::after */
 }
 .ActivePatches_assets::after {

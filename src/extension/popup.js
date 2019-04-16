@@ -168,7 +168,7 @@ class NewPatch extends Component {
 		}, '')
 
 		let fullTemplate = `
-			<header class="NewPatch_header spaceyHeader spaceyHeader-onLight">New patch for:</header>
+			<header class="NewPatch_header spaceyHeader spaceyHeader-onLight">New patch for URLs:</header>
 			<input type="text" class="NewPatch_matchList" 
 				title="Comma-separated list of URL matchers (regular expressions) to trigger this patch's insertion into webpages"
 				placeholder="*.bandcamp.com,sa.org.au"
@@ -264,7 +264,7 @@ class ActivePatches extends Component {
 
 		let fullTemplate = `
 			<header class="ActivePatches_header spaceyHeader">
-				Active patches:
+				Active patches
 			</header>
 			<ul class="ActivePatches_list">
 				${patches}
