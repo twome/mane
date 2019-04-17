@@ -1,11 +1,13 @@
 const escapeStringRegexp = require('escape-string-regexp')
 const express = require('express')
+const bodyParser = require('body-parser')
 import cloneDeep from '../../node_modules/lodash-es/cloneDeep.js'
 
 import { Patch } from './patch.js'
 import { 
 	getAllPatches,
-	getPatchAssetBodies
+	getPatchAssetBodies,
+	savePatchToFs
 } from './files.js'
 import { getConfig } from './config.js'
 
@@ -93,8 +95,15 @@ export const makePatchMapFromStrings = matchListStrings => new Map(matchListStri
 
 export const makeServer = (cfg = config) => {
 	let server = express()
+
+	server.use('*', (req, res, next) => {
+		// Requests originate from the remote hosts' Javascript
+		res.header("Access-Control-Allow-Origin", "*")
+		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+		next()
+	})
 	
-	server.get(cfg.routes.patchesFor + '/:urlToPatch', (req, res) => {
+	server.get(`/${cfg.routes.patchesFor}/:urlToPatch`, (req, res) => {
 		if (config.logLevel >= 2) console.info('Extension requested patches for url:', decodeURIComponent(req.url))
 		
 		let urlToPatch = decodeURIComponent(req.params.urlToPatch)
@@ -124,12 +133,33 @@ export const makeServer = (cfg = config) => {
 			// res.send(`Couldn't execute the patch search for URL`)
 		})
 	})
-	server.get('*', (req, res, next) => {
-		// Requests originate from the remote hosts' Javascript
-		res.header("Access-Control-Allow-Origin", "*")
-		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
-		next()
+
+	server.post(`/${cfg.routes.createPatchFile}`, bodyParser.json())
+	server.post(`/${cfg.routes.createPatchFile}`, (req, res) => {
+		let newPatch = new Patch(req.body)
+		for (let asset of newPatch.assets){
+			asset.body = '/* Start writing your patch! */'
+		}
+		console.debug({newPatch})
+		if (newPatch instanceof Error){
+			res.sendStatus(400)
+		} else {
+			savePatchToFs(newPatch, cfg.storageDir).then(writes => {
+				console.debug('save was a yuge success', writes, newPatch)
+				res.json({
+					newPatch, writes
+				})	
+			}).catch(err => {
+				console.error('Save failed:', err)
+				res.sendStatus(500)
+			})
+		}
 	})
+
+	server.get(`/${cfg.routes.openFileNative}`, (req, res) => {
+		res.send('hi opener')	
+	})
+
 	server.get('*', express.static(cfg.storageDir)) // Serve the patch file bodies
 
 	return server

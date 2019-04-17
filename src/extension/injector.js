@@ -5,18 +5,28 @@ let logInjections = true
 let last = arr => arr.reverse()[0]
 let fileExtension = path => last(path.split('.'))
 
-;(async ()=>{
+;(async function iifeForAwait(){
 
 // We need to encode to escape all the special URI characters
 let patchRequestPath = `${patchHost}/patches-for/${encodeURIComponent(location.href)}`
 
-let patches = await (await fetch(patchRequestPath)).json()
+let patches
+try {
+	patches = await (await fetch(patchRequestPath).catch(() => {
+		return '[]' // Act as if we simply got an empty response
+	})).json()
+
+} catch(err){
+	console.error(`Couldn't fetch patches from the Mane app serving at ${patchHost}; did you forget to start it?`, err)
+	patches = []
+}
+
 
 for (let patch of patches){
 	for (let asset of patch.assets){
 		
 		/*
-			If we wanted to insert the script as a `type="module"` inline script (and wrap the body with, eg, a DOMContentLoaded listener), we could get the body text directly here.
+			If we wanted to insert the script as a `type="module"` _inline_ script (and wrap the body with, eg, a DOMContentLoaded listener), we could get the body text directly here.
 
 			// let body = await (await fetch(`${patchHost}/${asset.fileUrl}`)).text()
 		*/

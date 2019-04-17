@@ -230,12 +230,8 @@ describe('Server', function() {
 		})
 
 		it('responds with patches that match URL as array', async () => {
-			let response
-			try {
-				response = await axios.get(`http://localhost:${config.port}${config.routes.patchesFor}/bandcamp.com`)	
-			} catch (err){
-				return Error(`Couldn't get a connection to the local server!`)
-			}
+			let response = await axios.get(`http://localhost:${config.port}/${config.routes.patchesFor}/bandcamp.com`)	
+			
 			assert.isArray(response.data)
 			assert(response.data.map(patch => patch.id).includes(`000000${config.excessLengthIndicator}*.bandcamp.com,sa.org.au`))
 			assert(response.data.map(patch => patch.id).includes('bandcamp.com,marxists.org'))

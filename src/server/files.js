@@ -94,17 +94,22 @@ export let importPatchJson = async (url, scheme)=>{
 }
 
 
-export let savePatchToFs = async (patch, storageDir = config.storageDir) => {
-	let filename = patch.id // This is the same as the concat'd matchList for small matchLists
-	
-	let jsPath = path.join(storageDir, filename + '.js')
-	let cssPath = path.join(storageDir, filename + '.css')
-
+export let savePatchToFs = async (patch, storageDir = config.storageDir, newFileOnly) => {
 	await makeDir(config.storageDir, { recursive: true })
-	let jsWrite = patch.js ? writeFile(jsPath, patch.js) : Promise.resolve(false)
-	let cssWrite = patch.css ? writeFile(cssPath, patch.css) : Promise.resolve(false)
 	
-	return await Promise.all([jsWrite, cssWrite])
+	// TODO URGENT: check that the file doesn't already exist
+	// if (newFileOnly)
+
+	let writes = patch.assets.map(asset => {
+		// TODO why this undef
+		console.info('Writing asset:', asset)
+		if (asset.body === undefined) return Promise.reject(Error('Undefined body on asset provided'))
+		return writeFile(path.join(storageDir, asset.fileUrl), asset.body)
+	})
+	
+	let all = await Promise.all(writes)
+	console.debug({all})
+	return all
 }
 
 

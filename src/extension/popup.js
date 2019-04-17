@@ -1,5 +1,9 @@
 // Options
 let patchHost = 'http://localhost:1917'
+let routes = {
+	createPatchFile: 'create-patch',
+	openFileNative: 'open-file',
+}
 
 // App-wide 'global' state
 let app = {}
@@ -75,10 +79,11 @@ class NewPatch extends Component {
 		],
 		cssChecked = true, // It's probably overall more likely that users want to simply hide an element
 		jsChecked = false,
-		newPatchMatchList = location.host
+		matchListStr = location.host,
+		newPatchOptions = {}
 	}={}){
 		super(el, '.NewPatch')
-		Object.assign(this, {newFileToggles, cssChecked, jsChecked, newPatchMatchList})
+		Object.assign(this, {newFileToggles, cssChecked, jsChecked, matchListStr, newPatchOptions})
 
 		this.render()
 	}
@@ -101,29 +106,38 @@ class NewPatch extends Component {
 		let jsAssetEl = this.el.querySelector('.NewPatch_patchFile #js')
 
 		let newMatchListHandler = () => {
-			this.newPatchMatchList = newMatchListEl.value
+			this.matchListStr = newMatchListEl.value
 		}
 
 		let createFilesHandler = () => {
 			let assetsToCreate = []
 			if (this.cssChecked) assetsToCreate.push({ 
 				assetType: 'css', 
-				fileUrl: this.newPatchMatchList + '.css'
+				fileUrl: this.matchListStr + '.css'
 			})
 			if (this.jsChecked) assetsToCreate.push({ 
 				assetType: 'js', 
-				fileUrl: this.newPatchMatchList + '.js'
+				fileUrl: this.matchListStr + '.js'
 			})
 
-			fetch(`${patchHost}/create-patch-file`, {
+			let patchCreationObject = {
+				assets: assetsToCreate,
+				matchList: this.matchListStr.split(','),
+				options: this.newPatchOptions
+			}
+
+			console.debug(patchCreationObject)
+
+			fetch(`${patchHost}/${routes.createPatchFile}`, {
 				method: 'POST',
 				mode: 'cors',
 				headers: {
 					'Content-Type': 'application/json',
 		        },
-		        body: JSON.stringify(assetsToCreate)
+		        body: JSON.stringify(patchCreationObject)
 			}).then(res => {
 				// TODO
+				console.debug('patch successfully created in server memory and saved to disk')
 			})
 		}
 
@@ -146,7 +160,7 @@ class NewPatch extends Component {
 		this.el.innerHTML = html
 
 		let newMatchListEl = this.el.querySelector('.NewPatch_matchList')
-		newMatchListEl.value = this.newPatchMatchList
+		newMatchListEl.value = this.matchListStr
 		
 		let cssAssetEl = this.el.querySelector('.NewPatch_patchFiles #css')
 		let jsAssetEl = this.el.querySelector('.NewPatch_patchFiles #js')
@@ -206,7 +220,7 @@ class ActivePatches extends Component {
 				event.preventDefault()
 
 				// Send a message to the native app / server asking to open this file locally using the OS' default application (for quickly opening your code editor)
-				fetch(`${patchHost}/open-file/${encodeURIComponent(el.href)}`, {
+				fetch(`${patchHost}/${routes.openFileNative}/${encodeURIComponent(el.href)}`, {
 					method: 'GET',
 					mode: 'cors',
 					headers: { 

@@ -4,7 +4,9 @@ export let getConfig = () => {
 	let cfg = {
 		port: 1917,
 		routes: {
-			patchesFor: '/patches-for'
+			patchesFor: 'patches-for',
+			createPatchFile: 'create-patch',
+			openFileNative: 'open-file'
 		},
 		accomodatingUrlMatching: true,
 		recentUrlsHistoryLength: 500,
