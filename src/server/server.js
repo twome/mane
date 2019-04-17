@@ -1,9 +1,13 @@
+const path = require('path')
+
 const escapeStringRegexp = require('escape-string-regexp')
 const express = require('express')
+const open = require('open')
 const bodyParser = require('body-parser')
 import cloneDeep from '../../node_modules/lodash-es/cloneDeep.js'
 
 import { Patch } from './patch.js'
+import { raceTimer } from './util.js'
 import { 
 	getAllPatches,
 	getPatchAssetBodies,
@@ -103,13 +107,17 @@ export const makeServer = (cfg = config) => {
 		next()
 	})
 	
-	server.get(`/${cfg.routes.patchesFor}/:urlToPatch`, (req, res) => {
+	/*
+		TODO
+		SECURITY: foreign domain beside that which the extension popup is running from MUST NOT be able to know any contents of the Mane user's FS beside the specific matching assets. Ideally, the foreign domains don't even know that, and we insert the asset as a content script / content style, not in-page.
+	*/
+	server.get(`/${cfg.routes.patchesFor}/:urlToMatch`, (req, res) => {
 		if (config.logLevel >= 2) console.info('Extension requested patches for url:', decodeURIComponent(req.url))
 		
-		let urlToPatch = decodeURIComponent(req.params.urlToPatch)
+		let urlToMatch = decodeURIComponent(req.params.urlToMatch)
 
 		findMatchingPatchesForUrl({
-			url: urlToPatch,
+			url: urlToMatch,
 			memCache: cfg.memCache || cache,
 			fsCacheFilePath: cfg.fsCacheFilePath,
 			fsPath: cfg.storageDir,
@@ -129,37 +137,84 @@ export const makeServer = (cfg = config) => {
 			}
 			res.json(patchArr)
 		}).catch(err => {
-			res.sendStatus(404)
-			// res.send(`Couldn't execute the patch search for URL`)
+			res.status(500)
+			res.send(`Couldn't execute the patch search for URL`)
 		})
 	})
 
+	/*
+		TODO
+		SECURITY: foreign domains beside that which the extension popup is running from MUST NOT be able to tell this server to write any file on the OS whatsoever.
+	*/
 	server.post(`/${cfg.routes.createPatchFile}`, bodyParser.json())
 	server.post(`/${cfg.routes.createPatchFile}`, (req, res) => {
-		let newPatch = new Patch(req.body)
+		// Verify request's body works as constructor arguments
+		let newPatch
+		try {
+			newPatch = new Patch(req.body)
+		} catch(err){
+			res.status(400)
+			res.send(`Couldn't create a new patch in memory using the constructor argument options POSTed. Error: ${err.message}`)
+			return err
+		}
+
 		for (let asset of newPatch.assets){
 			asset.body = '/* Start writing your patch! */'
 		}
-		console.debug({newPatch})
-		if (newPatch instanceof Error){
-			res.sendStatus(400)
-		} else {
-			savePatchToFs(newPatch, cfg.storageDir).then(writes => {
-				console.debug('save was a yuge success', writes, newPatch)
-				res.json({
-					newPatch, writes
-				})	
-			}).catch(err => {
-				console.error('Save failed:', err)
-				res.sendStatus(500)
+
+		savePatchToFs(newPatch, cfg.storageDir).then(() => {
+			console.info('Saved new patch to fs:', newPatch)
+			for (let asset of newPatch.assets){
+				open(path.join(cfg.storageDir, asset.fileUrl))
+			}
+
+			res.status(201) // Created resource
+			res.type('json') // Content-Type
+			res.send({
+				newPatch
+			})	
+		}).catch(err => {
+			console.error('Save failed:', err)
+			res.status(500)
+			res.send(`Server failed to save the new patches to storage`)
+		})
+	})
+
+	server.get(`/${cfg.routes.openFileNative}/:pathToOpen`, (req, res) => {
+		/*
+			TODO
+			SECURITY: foreign domains beside that which the extension popup is running from MUST NOT be able to tell this server to open anything in the native OS
+		*/
+
+		let absolutePath = path.join(cfg.storageDir, req.params.pathToOpen)
+
+		open(absolutePath).then(() => {
+			res.status(200)
+			res.send(`File attempted to open using the default app in the Mane server's OS (we cannot know whether or not it opened successfully in a useful/meaningful way.`)
+		}, err => {
+			res.status(500)
+			res.send(`Server couldn't open file`)
+		})
+	})
+
+	/*
+		TODO
+		SECURITY: foreign domain beside that which the extension popup is running from MUST NOT be able to know any contents of the Mane user's FS beside the specific matching assets. Ideally, the foreign domains don't even know that, and we insert the asset as a content script / content style, not in-page.
+	*/
+	// TODO: this breaks requesting from remote servers (and no response whatsoever except the 400??)
+	/*server.use('*', (req, res, next) => {
+		let probablyAFile = req.url.match(/\./g)
+		if (!probablyAFile){
+			res.status(400)
+			res.type('json') // Content-Type
+			res.send({
+				explanation: `Looks like you're requesting something that isn't a file - if you're looking for an API endpoint, try one of the available routes attached.`,
+				availableRoutes: cfg.routes
 			})
+		} else {
+			next()
 		}
-	})
-
-	server.get(`/${cfg.routes.openFileNative}`, (req, res) => {
-		res.send('hi opener')	
-	})
-
+	})*/
 	server.get('*', express.static(cfg.storageDir)) // Serve the patch file bodies
 
 	return server

@@ -1,3 +1,9 @@
+- FEAT: allow colons in matchers
+	- must separate the IDs and asset filenames?
+	- replace : with _ in filenames
+	- indicator -renamed---
+	- use special comment to write matchlist in file
+
 - FEAT: implement server endpoints for extension (add new patch, open asset in native, specify the active matcher)
 
 - BUG: changing cache.patches at all fucks up because getAllPatches doesn't check for diffs before using caches

@@ -22,3 +22,15 @@ export let truncateMatchList = (matchList, charLimit) => {
 	}
 	return truncated.substr(0, truncated.length - 1) // Cut trailing comma
 }
+
+
+
+export let raceTimer = (task, timeMs = 1000) => {
+	let timer = new Promise((res, rej) => {
+		setTimeout(() => {
+			rej(Error(`Promise timed out after ${timeMs}`))
+		}, timeMs)	
+	})
+
+	return Promise.race(task, timer)
+}

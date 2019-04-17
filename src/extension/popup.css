@@ -33,6 +33,8 @@ body {
 	font-family: 'Inter UI', 'Helvetica Neue', 'Helvetica', 'Source Sans Pro', 'Arial', sans-serif;
 	font-size: 14px;
 	line-height: 1.5;
+
+	min-width: 300px; /* Just a little more room to breathe than the bare minimum */
 }
 
 /* 
@@ -292,4 +294,11 @@ section {
 }
 .NewPatch_patchFile input[type="checkbox"]::after {
 	top: -0.5em; /* To account for vertical centering */
+}
+
+.NewPatch_createBtn {
+
+}
+.NewPatch_createBtn-failed {
+	background-color: red;
 }

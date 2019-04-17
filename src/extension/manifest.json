@@ -13,7 +13,7 @@
 
 	"content_scripts": [
 		{
-			"matches": ["*://*/*"],
+			"matches": ["*://*/*"], // It's massively more convenient to grant access to all sites for the patch injector, so that the user doesn't need to manually whitelist sites by default. We're keen to find a way to let users control this whitelist/blacklist without having to first grant full permission.
 			"js": ["injector.js"]
 		}
 	],
@@ -23,6 +23,10 @@
 		"default_title": "Mane",
 		"default_popup": "popup.html"
 	},
+
+	"permissions": [
+		"activeTab" // So the popup / main extension "button" can tell which tab is currently active, and thus: use the current tab's URL to check which patches should be active, and autofill the current tab's domain into the "New patch" matcher list)
+	],
 	
 	// Metadata for Firefox identification
 	"applications": {

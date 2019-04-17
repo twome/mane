@@ -12,7 +12,7 @@ export class Patch {
 			} else if (typeof args[0] === 'object'){
 				var {
 					/*Asset[]*/assets = [],
-					/*String[]*/matchList,
+					/*String[]*/matchList, // Mandatory
 					/*String*/id,
 					options = {}
 				} = args[0] 
@@ -23,6 +23,8 @@ export class Patch {
 			throw Error('Patch accepts one argument')
 		}
 
+		if (!matchList || !Array.isArray(matchList)) throw Error('Must provide an array-of-strings matchList')
+
 		this.options = Object.assign(options, {
 			on: true,
 			maxFilenameSize: 60,
@@ -30,8 +32,11 @@ export class Patch {
 		})
 
 		if (assets) this.assets = assets 
- 		if (!matchList.hasOwnProperty('length') || matchList.length < 1){
+ 		if (matchList.length < 1){
 			throw Error('Patch must specify at least one url-match string')
+		} else if (matchList.some(m => m.match(/:/))){ 
+			console.debug({matchList})
+			throw Error(`Matchers can't include a colon (:) character, as they can't be used in filenames for the saved patches. (We'd like to allow colons in a future feature.)`)
 		} else {
 			this.matchList = matchList
 		}

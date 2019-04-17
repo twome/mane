@@ -1,3 +1,8 @@
+/* global browser, chrome */
+if (typeof browser === 'undefined'){
+	if (typeof chrome !== 'undefined' && chrome.tabs) window.browser = chrome
+}
+
 // Options
 let patchHost = 'http://localhost:1917'
 let routes = {
@@ -47,13 +52,53 @@ const assetsToPatchMap = assets => {
 
 const getActivePatches = () => assetsToPatchMap(getActiveAssets())
 
+const getActiveTabUrl = async () => {
+	// TODO - DEV ONLY
+	if (typeof browser === 'undefined'){
+		// Mock a real URL
+		return 'https://mockurl.example.com/a-path?fake-query=sure'
+	}
+
+	return new Promise((res, rej) => {
+		let onTabsFound = tabs => {
+			if (tabs[0]){
+				res(tabs[0].url)
+			} else {
+				rej(Error('No tabs found'))
+			}
+		}
+
+		if (chrome) {
+			browser.tabs.query({
+				active: true,
+				currentWindow: true
+			}, onTabsFound)
+		} else {
+			return browser.tabs.query({
+				active: true,
+				currentWindow: true
+			}).then(onTabsFound, err => {
+				console.error({err})
+			})
+		}
+	})
+}
+
 // TODO: Why is our CORS not working here?
-/*const getMatchingPatches = async (url = location.href) => {
+const getMatchingPatches = async (url) => {
+	if (!url){
+		url = await getActiveTabUrl()
+	}
+
 	// We need to encode to escape all the special URI characters
 	let patchRequestPath = `${patchHost}/patches-for/${encodeURIComponent(url)}`
 
-	return (await (await fetch(patchRequestPath)).json())
-}*/
+	let response = await fetch(patchRequestPath, {
+		mode: 'cors'
+	})
+
+	return await response.json()
+}
 
 class Component {
 	constructor(el, selector){
@@ -79,18 +124,23 @@ class NewPatch extends Component {
 		],
 		cssChecked = true, // It's probably overall more likely that users want to simply hide an element
 		jsChecked = false,
-		matchListStr = location.host,
+		matchListStr = '',
 		newPatchOptions = {}
 	}={}){
 		super(el, '.NewPatch')
 		Object.assign(this, {newFileToggles, cssChecked, jsChecked, matchListStr, newPatchOptions})
 
-		this.render()
+		this.updateVm().then(() => {
+			this.render()	
+		})
 	}
 
-	/* HACK */
+	/* 
+		HACK: outside of main render fn so assetTypesHandler can call it without a full render
+		SOLVE: full render shouldn't bother assetTypesHandler
+	*/
 	renderCreateButton(){
-		let createFilesEl = this.el.querySelector('.js-createFiles')
+		let createFilesEl = this.el.querySelector('.NewPatch_createBtn')
 		if (!this.cssChecked && !this.jsChecked){
 			createFilesEl.classList.add('btn-disabled')
 			createFilesEl.title = 'Must select at least one type of file to create; CSS or JS'
@@ -99,9 +149,13 @@ class NewPatch extends Component {
 		}
 	}
 
+	async updateVm(){
+		this.matchListStr = new URL(await getActiveTabUrl()).hostname
+	}
+
 	registerHandlers(){
 		let newMatchListEl = this.el.querySelector('.NewPatch_matchList')
-		let createFilesEl = this.el.querySelector('.js-createFiles')
+		let createFilesEl = this.el.querySelector('.NewPatch_createBtn')
 		let cssAssetEl = this.el.querySelector('.NewPatch_patchFile #css')
 		let jsAssetEl = this.el.querySelector('.NewPatch_patchFile #js')
 
@@ -126,8 +180,6 @@ class NewPatch extends Component {
 				options: this.newPatchOptions
 			}
 
-			console.debug(patchCreationObject)
-
 			fetch(`${patchHost}/${routes.createPatchFile}`, {
 				method: 'POST',
 				mode: 'cors',
@@ -136,8 +188,17 @@ class NewPatch extends Component {
 		        },
 		        body: JSON.stringify(patchCreationObject)
 			}).then(res => {
-				// TODO
-				console.debug('patch successfully created in server memory and saved to disk')
+				if (res.ok){
+					// TODO - feedback that creation was successful
+					this.updateVm().then(this.render)
+					console.debug('patch successfully created in server memory and saved to disk')	
+				} else {
+					// Show user that creation failed
+					// TODO
+					createFilesEl.classList.add('NewPatch_createBtn-failed')
+				}
+			}, err => {
+				console.error(`Couldn't connect to server`)
 			})
 		}
 
@@ -189,7 +250,7 @@ class NewPatch extends Component {
 			>
 			<div class="NewPatch_patchFiles">
 				${newFileToggles}
-				<button class="js-createFiles btn">Create files</button>
+				<button class="NewPatch_createBtn btn">Create files</button>
 			</div>
 		`
 
@@ -207,20 +268,26 @@ class ActivePatches extends Component {
 
 		// TODO: Highlight the active matcher within each matchList (send from server?)
 		this.activeMatcher = 'www.google.com' // TEMP TEST
-		this.render()
+		
+		this.updateVm().then(() => {
+			this.render()	
+		})
+	}
+
+	async updateVm(){
+		let url = await getActiveTabUrl()
+		this.patches = await getMatchingPatches(url)
 	}
 
 	registerHandlers(){
 		let assetEls = this.el.querySelectorAll('.ActivePatches_asset')
 		assetEls.forEach(el => {
 			el.addEventListener('click', (event) => {
-				console.debug('active patch open event', this)
-
 				// TODO: Still allow default open-in-new-tab functionality
 				event.preventDefault()
 
 				// Send a message to the native app / server asking to open this file locally using the OS' default application (for quickly opening your code editor)
-				fetch(`${patchHost}/${routes.openFileNative}/${encodeURIComponent(el.href)}`, {
+				fetch(`${patchHost}/${routes.openFileNative}/${encodeURIComponent(el.dataset.openingSrc)}`, {
 					method: 'GET',
 					mode: 'cors',
 					headers: { 
@@ -233,7 +300,7 @@ class ActivePatches extends Component {
 
 	render(){
 		// Update VM
-		this.patches = getActivePatches()
+		// this.patches = getActivePatches()
 
 		// Update view
 		let html = this.toHTML()
@@ -254,9 +321,11 @@ class ActivePatches extends Component {
 				`
 			}, '')
 			let assets = patch.assets.reduce((acc, asset) => {
-				let fullAssetPath = `${asset.fileUrl}`
+				let assetPath = `${asset.fileUrl}`
 				return acc + `
-					<a href="${fullAssetPath}" class="ActivePatches_asset boxLink"
+					<a href="${patchHost}/${assetPath}" 
+						data-opening-src="${assetPath}"
+						class="ActivePatches_asset boxLink"
 						title="Open file in your default native application"
 					>
 						${fileExtension(asset.fileUrl).toUpperCase()}

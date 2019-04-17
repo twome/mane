@@ -94,22 +94,38 @@ export let importPatchJson = async (url, scheme)=>{
 }
 
 
-export let savePatchToFs = async (patch, storageDir = config.storageDir, newFileOnly) => {
+export let savePatchToFs = async (patch, storageDir = config.storageDir, canOverwriteExisting = false) => {
 	await makeDir(config.storageDir, { recursive: true })
 	
-	// TODO URGENT: check that the file doesn't already exist
-	// if (newFileOnly)
-
-	let writes = patch.assets.map(asset => {
+	let writes = patch.assets.map(async asset => {
 		// TODO why this undef
 		console.info('Writing asset:', asset)
+
 		if (asset.body === undefined) return Promise.reject(Error('Undefined body on asset provided'))
-		return writeFile(path.join(storageDir, asset.fileUrl), asset.body)
+
+		let absolutePath = path.join(storageDir, asset.fileUrl)
+
+		let extantBody
+		if (!canOverwriteExisting){
+			try {
+				extantBody = await readFile(absolutePath)
+				if (extantBody.length > 0){
+					throw Error('Cannot overwrite a non-empty file whilst `canOverwriteExisting` is true')
+				}
+			} catch(err){
+				if (err.name.match(/ENOENT/i) || err.message.match(/ENOENT/i)){
+					// File doesn't exist; we're good to create a new one!
+				} else if (extantBody.length){
+					throw err 	
+				}
+				// If there's no body, then there's nothing to lose by writing over it
+			}
+		}
+		
+		return writeFile(absolutePath, asset.body)
 	})
 	
-	let all = await Promise.all(writes)
-	console.debug({all})
-	return all
+	return Promise.all(writes)
 }
 
 
