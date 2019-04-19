@@ -3,6 +3,7 @@
 
 	dark - hsla(29, 100%, 6%, 1)
 	light - hsla(69, 100%, 96%, 1)
+	light-d - hsl(53, 100%, 79%)
 	green - hsla(97, 100%, 75%, 1)
 	brown - hsla(24, 94%, 14%, 1)
 	orange - hsla(33, 93%, 54%, 1)
@@ -59,7 +60,7 @@ input[type="checkbox"] {
 	width: 0;
 	height: 0;
 	margin: 0;
-	margin-right: calc(2em + 0.6em); /* MAGIC NUMBER: 2em is the size of the box vs (missing/invisible) original */
+	margin-right: calc(2em + 0.6em); /* MAGIC VALUE: 2em is the size of the box vs (missing/invisible) original */
 }
 input[type="checkbox"]::after {
 	content: '\2713';
@@ -120,6 +121,9 @@ section {
 
 	transition: background-color 50ms;
 }
+.btn:focus {
+	outline: 2px solid background-color: hsla(33, 93%, 54%, 1);
+}
 .btn:hover {
 	background-color: hsla(38, 93%, 77%, 1);
 }
@@ -130,9 +134,65 @@ section {
 	opacity: 0.2;
 	cursor: not-allowed;
 }
+.btn-isFailed:hover,
 .btn-disabled:hover {
 	background-color: inherit;
 }
+@keyframes flashRed {
+	from {
+		background-color: red;	
+	}
+
+	/* Back to previous background */
+	/* to {
+		background: green;
+	} */
+}
+.btn-isFailed {
+	animation-name: flashRed;
+	animation-iteration-count: 1;
+	animation-timing-function: ease-out;
+	animation-duration: 2000ms;
+}
+
+
+
+.neonSign {
+	color: hsla(97, 100%, 75%, 1);
+	border: 1px solid;
+	border-radius: 3px;
+	padding: 0 0.3em;
+	line-height: 1;
+	display: flex;
+	align-items: center;
+	box-shadow: 0px 0px 3px 0px, inset 0px 0px 3px 0px;
+	text-shadow: 0px 0px 3px;
+
+	background-color: transparent;
+	font-family: inherit;
+	font-size: inherit;
+
+	cursor: pointer;
+	transition: color 200ms, box-shadow-color 200ms, text-shadow-color 200ms;
+}
+.neonSign:focus {
+	box-shadow: 0px 0px 8px 1px, inset 0px 0px 8px 1px;
+	text-shadow: 0px 0px 3px;
+	outline: none;
+}
+.neonSign-off {
+	color: hsl(0, 0%, 76%);
+	box-shadow: 0px 0px 3px 0px transparent;
+	text-shadow: 0px 0px 3px transparent;
+}
+.neonSign-off:focus {
+	color: hsl(0, 0%, 90%);
+	box-shadow: none;
+	text-shadow: none;
+	box-shadow: 0px 0px 0px 1px hsl(0, 0%, 90%);
+}
+
+
 
 .spaceyHeader {
 	font-size: 0.8em;
@@ -201,9 +261,10 @@ section {
 }
 
 .ActivePatches_list {
-	padding: 0.4em;
+	padding: 0.4em 0em;
 	margin: 0;
 	font-family: Inconsolata, Courier New, monospace;
+	text-align: center;
 }
 
 .ActivePatches_patch {
@@ -216,7 +277,9 @@ section {
 }
 
 .ActivePatches_matchList {
-	/* TODO: We want this to remain one line long and scroll horizontally "underneath" the asset links */
+	flex-grow: 1; /* Take up all the empty space and internally left-align text */
+	margin-left: 0.62em;
+
 	position: relative;
 	overflow-x: hidden;
 	text-overflow: ellipsis; 
@@ -254,6 +317,31 @@ section {
 	content: initial;
 	display: none;
 	margin-right: 0;
+}
+
+.ActivePatches_empty {
+	display: inline-flex;
+	text-align: center;
+	font-style: italic;
+	color: hsl(33, 78%, 60%);
+	position: relative; 
+	right: 2px; /* Adjustment for italics */
+
+	justify-content: center;
+}
+.ActivePatches_empty::before,
+.ActivePatches_empty::after {
+	/* Adjustment for specific font */
+	top: 1px;
+	position: relative;
+}
+.ActivePatches_empty::before {
+	content: '\2772';
+	margin-right: 0.4em;
+}
+.ActivePatches_empty::after {
+	content: '\2773';
+	margin-left: 0.3em; /* Slightly smaller to account for italic's rightwards slant */
 }
 
 
@@ -299,6 +387,42 @@ section {
 .NewPatch_createBtn {
 
 }
-.NewPatch_createBtn-failed {
+
+
+
+.Growl {
+	display: flex;
+	overflow: hidden;
+	color: hsla(29, 100%, 6%, 1);
+	padding: 0.62em;
+	border-top: 1px solid white;
+
+	transition: height 200ms;
+}
+.Growl-isHidden {
+	height: 0;
+}
+.Growl-success {
+	background-color: hsla(97, 100%, 75%, 1);
+}
+.Growl-info {
+	background-color: hsla(38, 93%, 77%, 1);
+}
+.Growl-warning {
+	background-color: hsla(33, 93%, 54%, 1);
+}
+.Growl-error {
 	background-color: red;
+	color: hsla(69, 100%, 96%, 1);
+}
+
+
+
+/* 
+	Utility classes
+*/
+
+.u-hidden {
+	display: none;
+	visibility: hidden;
 }

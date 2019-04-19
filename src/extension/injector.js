@@ -23,12 +23,14 @@ try {
 
 
 for (let patch of patches){
+	if (!patch.options.on) continue
 	for (let asset of patch.assets){
 		
 		/*
 			If we wanted to insert the script as a `type="module"` _inline_ script (and wrap the body with, eg, a DOMContentLoaded listener), we could get the body text directly here.
 
-			// let body = await (await fetch(`${patchHost}/${asset.fileUrl}`)).text()
+			// let asset = await (await fetch(`${patchHost}/${asset.fileUrl}`)).text()
+			// asset.body
 		*/
 			
 		let extension = fileExtension(asset.fileUrl)

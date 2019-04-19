@@ -5,12 +5,15 @@ export let getConfig = () => {
 		port: 1917,
 		routes: {
 			patchesFor: 'patches-for',
-			createPatchFile: 'create-patch',
-			openFileNative: 'open-file'
+			createPatchFile: 'create-patch', // TODO: just POST on routes.patches/:id
+			openFileNative: 'open-file',
+			setOptions: 'set-options',
+			patches: 'patches'
 		},
 		accomodatingUrlMatching: true,
 		recentUrlsHistoryLength: 500,
 		storageDir: path.join(process.cwd(), '/patches/'),
+		optionsJsonPath: path.join(process.cwd(), '/patches/options.json'),
 		excessLengthIndicator: '-truncated---',
 		specialCommentToken: 'patch-urls',
 		fsCacheDir: '.cache',

@@ -36,6 +36,16 @@ export const getPatchAssetBodies = async (patch, fsPath = config.storageDir) => 
 	return assets
 }
 
+export const getOptions = async ({cfg, cache}) => {
+	// TODO use cache
+	let fileBody = await readFile(cfg.optionsJsonPath, 'utf8')
+	return JSON.parse(fileBody)
+}
+
+export const setOptions = async (optionsObj, {cfg, cache}) => {
+	await writeFile(cfg.optionsJsonPath, JSON.stringify(optionsObj))
+}
+
 export let importPatchJson = async (url, scheme)=>{
 	if (scheme === config.patchJsonSchema.UserJavascriptAndCSS){
 		/*

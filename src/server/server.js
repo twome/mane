@@ -11,7 +11,9 @@ import { raceTimer } from './util.js'
 import { 
 	getAllPatches,
 	getPatchAssetBodies,
-	savePatchToFs
+	savePatchToFs,
+	setOptions,
+	getOptions
 } from './files.js'
 import { getConfig } from './config.js'
 
@@ -102,8 +104,8 @@ export const makeServer = (cfg = config) => {
 
 	server.use('*', (req, res, next) => {
 		// Requests originate from the remote hosts' Javascript
-		res.header("Access-Control-Allow-Origin", "*")
-		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+		res.header('Access-Control-Allow-Origin', '*')
+		res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
 		next()
 	})
 	
@@ -195,6 +197,44 @@ export const makeServer = (cfg = config) => {
 			res.status(500)
 			res.send(`Server couldn't open file`)
 		})
+	})
+
+	server.put(`/${cfg.routes.setOptions}/*`, bodyParser.json())
+	server.put(`/${cfg.routes.setOptions}/:patchId`, (req, res, next) => {
+		getOptions({cfg})
+			.then(allOptions => {
+				allOptions[decodeURIComponent(req.params.patchId)] = req.body
+				setOptions(allOptions, { cfg, cache })
+					.then(() => {
+						res.sendStatus(200)
+					})
+					.catch(err => {
+						res.status(500)
+						res.send(`Couldn't write options to FS`)
+					})	
+			})
+			.catch(err => {
+				getAllPatches({
+					memCache: cache, 
+					fsPath: cfg.fsPath, 
+					fsCacheFilePath: cfg.fsCacheFilePath
+				}).then(allPatches => {
+					let optionsFromScratch = [...allPatches.values()].reduce((obj, patch) => {
+						obj[patch.id] = patch.options
+						return obj
+					}, {})
+
+					optionsFromScratch[decodeURIComponent(req.params.patchId)] = req.body
+					setOptions(optionsFromScratch, { cfg, cache })
+						.then(() => {
+							res.send(200)
+						})
+						.catch(err => {
+							res.status(500)
+							res.send(`Couldn't write options to FS`)
+						})	
+				})
+			})
 	})
 
 	/*
