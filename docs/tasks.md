@@ -1,10 +1,20 @@
+- BUG: attach options from options.json at the end of getAllPatches
+
+- FEAT: ext: if we're trying to create the exact same matchList and asset type as an existing patch, flash that asset indicator in the matching patches section
+
+- BUG: cache keeps showing patch unless ALL assets are deleted
+
+- FEAT: disable/enable patches from ext
+
+- FEAT: open patches dir
+
 - FEAT: allow colons in matchers
 	- must separate the IDs and asset filenames?
 	- replace : with _ in filenames
 	- indicator -renamed---
 	- use special comment to write matchlist in file
 
-- FEAT: implement server endpoints for extension (add new patch, open asset in native, specify the active matcher)
+- FEAT: specify the active matcher
 
 - BUG: changing cache.patches at all fucks up because getAllPatches doesn't check for diffs before using caches
 
@@ -14,7 +24,7 @@
 
 - DEBT: implement assets properly
 
-- DEBT: extension should parallel-load all scripts and bodies before injecting references
+- DEBT: extension should parallel-load all scripts and bodies before injecting dep-invocations
 
 - FEAT: optionally write patches as a folder, so the the assets can reference sibling images etc within the folder
 
@@ -28,13 +38,9 @@
 
 - FEAT: use native communication instead of HTTP between server and extension
 
-- FEAT: maybe use BrowserFS to keep track of (and cache) asset files in extension? https://github.com/jvilk/BrowserFS
+- FEAT: maybe use BrowserFS to keep track of (and store) asset files in extension? https://github.com/jvilk/BrowserFS
 
 - FEAT: long-term storage of patches in browser 
-
-- FEAT: create new patch for current domain from extension
-	- JS, CSS, or both
-	- optional text input for matchList
 
 - FEAT: set patch storage dir from server CL arg & extension popup
 
@@ -49,7 +55,7 @@
 contentScripts API to register patches at runtime (instead of modifying <head>)
 	- pro: only interference with user page is from patch itself
 	- pro: faster loading / load asynchronously?
-	- con: security hazard from patches having greater power
+	- con: security hazard from patches having greater power?
 
 pageAction to only show up in address bar when active
 

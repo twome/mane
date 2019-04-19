@@ -2,6 +2,19 @@ import { getRandomId, truncateMatchList } from './util.js'
 import { getConfig } from './config.js'
 let config = getConfig()
 
+export class Asset {
+	constructor({
+		/*String*/fileUrl,
+		/*Enum - config.assetTypes*/assetType,
+		/*String*/body
+	}={}){
+		if (!fileUrl && !body) throw Error('Must have either fileUrl or body')
+		this.fileUrl = fileUrl
+		this.body = body
+		this.assetType = assetType
+	}
+}
+
 export class Patch {
 	constructor(...args){
 		if (args.length === 1){
