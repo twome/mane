@@ -19,31 +19,42 @@ export default class Growl {
 			[Growl.types.Error, 'Growl-error']
 		])
 		this.stateClasses = {
-			hidden: 'u-hidden'
+			hidden: 'u-hidden',
+			trickHidden: 'Growl-isHidden'
 		}
 
 		// State
-		this.shown = !!showImmediately
+		this.shown = false // So the first show() animates from hidden to shown
 
 		this.transitioning = false
 		this.handlersRegistered = false
 		this.naturalHeight = null
 
-		this.render()
-
+		this.render().then(() => {
+			if (!!showImmediately){
+				this.shown = true
+				this.render()
+			}	
+		})
+		
 		// Start lifespan time to self-remove
-		setTimeout(() => {
-			this.kill()
-		}, lifespanMs)
+		if (lifespanMs !== 0){
+			setTimeout(() => {
+				// this.kill()
+			}, lifespanMs)
+		}
 	}
 
 	waitForTransition(){
-		let prom = new Promise((res) => {
-			let handler = (res) => {
-				res()
+		return new Promise((res) => {
+			let handler = () => {
 				this.el.removeEventListener('transitionend', handler)
+				this.transitioning = false
+				res()
 			}
-			this.el.addEventListener('transitionend', handler)
+			this.el.addEventListener('transitionend', handler) // TODO why doesn't this fire?
+			// HACK
+			setTimeout(handler, 200) // In case the transitions don't work
 		})
 	}
 
@@ -51,28 +62,20 @@ export default class Growl {
 		if (this.transitioning) return false
 		this.transitioning = true
 
-		this.el.classList.remove(this.stateClasses.hidden)
-
-		let initial = this.el.offsetHeight
-
-		// Instantly/invisibly get natural height
-		this.el.style.height = ''
-		let target = this.el.offsetHeight
+		let transition = this.waitForTransition()
+		this.el.classList.remove(this.stateClasses.trickHidden)
 		
-		this.el.style.height = initial + 'px'
-		setTimeout(() => { this.el.style.height = target + 'px' }, 100) // Trick to force the CSS transition to kick in
-
-		await this.waitForTransition()
+		await transition
 	}
 
 	async hide(){
 		if (this.transitioning) return false
 		this.transitioning = true
 
-		this.el.style.height = this.el.offsetHeight // Set to a definite value so CSS transition can work
-		setTimeout(() => { this.el.style.height = '0px' }, 0) // Trick to force the CSS transition to kick in
+		let transition = this.waitForTransition()
+		this.el.classList.add(this.stateClasses.trickHidden)
 
-		await this.waitForTransition()
+		await transition
 	}
 
 	registerHandlers(){
@@ -81,18 +84,6 @@ export default class Growl {
 			this.render()
 		}
 		this.el.addEventListener('click', clickHandler)
-
-		let transitionEndHandler = () => {
-			console.debug('transitionend firing', this)
-			this.transitioning = false
-			this.el.style.height = ''
-			if (!this.shown){
-				this.el.classList.add(this.stateClasses.hidden)
-			} else {
-				this.el.classList.remove(this.stateClasses.hidden)
-			}
-		}
-		this.el.addEventListener('transitionend', transitionEndHandler)
 
 		this.handlersRegistered = true
 	}
