@@ -6,7 +6,7 @@
 
 A Node + WebExtension app that automatically inserts your custom JavaScript and CSS files, stored on your hard drive or a remote Git repository [TODO], into web pages to customise them - fix bugs, improve the visual design, remove ads - whatever you want! 
 
-It also allows you to easily share and use public community "patches", so everyone can easily benefit from one person's customisations. 
+[TODO] It also allows you to easily share and use public community "patches", so everyone can easily benefit from one person's customisations. 
 
 This is similar in approach to [GreaseMonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)/[TamperMonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo), and '[User Javascript & CSS](https://chrome.google.com/webstore/detail/user-javascript-and-css/nbhcbdghjpllgmfilhnhkllmkecfmpld)' on Chrome, but with an emphasis on editing and storing the patches in whatever way suits you, instead of in a custom editor and locked into a single browser extension's database.
 

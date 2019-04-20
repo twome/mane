@@ -1,3 +1,5 @@
+- BUG: bundle Inconsolata and Inter UI fonts
+
 - FEAT: configuration using a CLI arguments library + dotenv
 
 - BUG: attach options from options.json at the end of getAllPatches
