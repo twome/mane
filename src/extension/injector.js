@@ -12,13 +12,11 @@ let patchRequestPath = `${patchHost}/patches-for/${encodeURIComponent(location.h
 
 let patches
 try {
-	patches = await (await fetch(patchRequestPath).catch(() => {
-		return '[]' // Act as if we simply got an empty response
-	})).json()
-
+	let response = await fetch(patchRequestPath)
+	patches = await response.json()
 } catch(err){
 	console.error(`Couldn't fetch patches from the Mane app serving at ${patchHost}; did you forget to start it?`, err)
-	patches = []
+	patches = [] // Act as if we simply got an empty response
 }
 
 
