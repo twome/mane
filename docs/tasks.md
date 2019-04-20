@@ -1,3 +1,5 @@
+- FEAT: configuration using a CLI arguments library + dotenv
+
 - BUG: attach options from options.json at the end of getAllPatches
 
 - FEAT: ext: if we're trying to create the exact same matchList and asset type as an existing patch, flash that asset indicator in the matching patches section

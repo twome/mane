@@ -237,24 +237,6 @@ export const makeServer = (cfg = config) => {
 			})
 	})
 
-	/*
-		TODO
-		SECURITY: foreign domain beside that which the extension popup is running from MUST NOT be able to know any contents of the Mane user's FS beside the specific matching assets. Ideally, the foreign domains don't even know that, and we insert the asset as a content script / content style, not in-page.
-	*/
-	// TODO: this breaks requesting from remote servers (and no response whatsoever except the 400??)
-	/*server.use('*', (req, res, next) => {
-		let probablyAFile = req.url.match(/\./g)
-		if (!probablyAFile){
-			res.status(400)
-			res.type('json') // Content-Type
-			res.send({
-				explanation: `Looks like you're requesting something that isn't a file - if you're looking for an API endpoint, try one of the available routes attached.`,
-				availableRoutes: cfg.routes
-			})
-		} else {
-			next()
-		}
-	})*/
 	server.get('*', express.static(cfg.storageDir)) // Serve the patch file bodies
 
 	return server

@@ -4,7 +4,7 @@
 
 ##### Status: pre-alpha; not for public use
 
-A Node + WebExtension app that automatically inserts your custom JavaScript and CSS files, stored on your hard drive or a remote Git repository, into web pages to customise them - fix bugs, improve the visual design, remove ads - whatever you want! 
+A Node + WebExtension app that automatically inserts your custom JavaScript and CSS files, stored on your hard drive or a remote Git repository [TODO], into web pages to customise them - fix bugs, improve the visual design, remove ads - whatever you want! 
 
 It also allows you to easily share and use public community "patches", so everyone can easily benefit from one person's customisations. 
 
@@ -22,7 +22,7 @@ Turn on 'developer mode' in your browser's extension manager, then load this rep
 
 ## Usage
 
-<i>**A note on terminology:** Here we refer to a "patch" to mean "a collection of JS and CSS files that are activated according to their list of URL matchers". "Matchers" are [regular expressions](https://regexr.com/) which test against the browser's current URL. If any of a patch's matches match the current page, the browser extension will inject all of its files into the page.</i>
+<i>**A note on terminology:** Here we refer to a "patch" to mean "a collection of JS and CSS files that are activated according to their list of URL matchers". "Matchers" are [regular expressions](https://regexr.com/) which test against the browser's current URL. If any of a patch's matches match the current page's URL, the browser extension will inject all of its files into the page.</i>
 
 You can quickly make a new patch that matches the current page's **domain** (eg. `google.com` - which includes `maps.google.com`, `www.google.com`, and `google.com/a-search-result`) by clicking 'New patch' in the Mane browser extension's popup. This will automatically create a new empty CSS and/or JS file in this repo's `patches/` folder, and open them in your default code editor. 
 
@@ -36,7 +36,7 @@ You can disable a patch using the browser extension's popup (which will list any
 
 ### Advanced URL matching
 
-You don't need to use the extension to create a patch; it's only a convenience. You can simply make a new file in this repo's `patches/` directory (this default location can be [changed](#configuration)[TODO]). Name the file with the exact text of the matcher list you want to use, plus `.js` or `.css`.
+You don't need to use the extension to create a patch; it's only a convenience. You can simply make a new file in this repo's `patches/` directory (this default location can be [changed](#configuration) [TODO]). Name the file with the exact text of the matcher list you want to use, plus `.js` or `.css`.
 
 Eg. for a patch that styles all artist subdomains on Bandcamp, but not the main Bandcamp page itself, you would create:
 
@@ -79,7 +79,7 @@ It's a bit risky to create gigantic path names; lots of programs don't deal well
 When applying patches, we'll resolve each domain by:
 	
 - looking for a match in root asset (JS/CSS) filenames, then
-- looking for a match in folder names (apply all files in folder), then
+- looking for a match in folder names (apply all files in folder) [TODO], then
 - [TODO] looking for a match in folderName/matches.txt and applying all files in folder
 - (optional & slow) looking for a custom comment in the first non-whitespace line of every asset: `/* patch-urls <matches string goes here> */`
 
@@ -90,10 +90,6 @@ The app should cache an index file of the locations of assets for all matchers f
 Install Chrome extension [User Javascript & CSS](https://chrome.google.com/webstore/detail/user-javascript-and-css/nbhcbdghjpllgmfilhnhkllmkecfmpld) (it's a very dry name, but a well-designed and straightforward extension), which lets you add custom JS / CSS to any page, according to a text-based filter for which pages get which JS / CSS. 
 
 To use this JS / CSS, go to any page in your browser, click the User Javascript & CSS button, click 'Add new' and then copy the contents of these files into the relevant panes. "UJS&CSS" will then automatically detect any time you visit a URL that is based on your current page's domain (eg "twitter.com"), and will add these files into the page.
-
-##### No Chrome?
-
-You're on your own to find an extension/method to add these scripts into pages you visit, but there's nothing about these scripts that are specific to Chrome whatsoever.
 
 ## License
 
