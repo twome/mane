@@ -17,7 +17,7 @@ import {
 	makePatchMapFromStrings
 } from '../src/server/server.js'
 import { 
-	importPatchJson, 
+	importPatchesArchive, 
 	savePatchToFs, 
 	getPatchesFromDir, 
 	getMatchListFromWithinFile, 
@@ -62,7 +62,7 @@ describe('Server', function() {
 	
 	let archivePatches
 	before(async () => {
-		archivePatches = archivePatches || await importPatchJson(paths.staticJsonBackup, config.patchJsonSchema.UserJavascriptAndCSS)
+		archivePatches = archivePatches || await importPatchesArchive(paths.staticJsonBackup, config.patchJsonSchema.UserJavascriptAndCSS)
 
 		return await fillSandbox(new Map([
 			[
@@ -86,7 +86,7 @@ describe('Server', function() {
 
 	describe('importing', () => {
 		it('imports patches from UserJavascriptAndCSS JSON exports', async () => {
-			let archivePatches = await importPatchJson(paths.staticJsonBackup, config.patchJsonSchema.UserJavascriptAndCSS)
+			let archivePatches = await importPatchesArchive(paths.staticJsonBackup, config.patchJsonSchema.UserJavascriptAndCSS)
 			assert.isArray(archivePatches)
 			assert(archivePatches.length)
 		})
@@ -100,7 +100,7 @@ describe('Server', function() {
 		})
 
 		it('gets all patches from directory', async () => {
-			let patches = await getPatchesFromDir(paths.sandbox)
+			let patches = await getPatchesFromDir({cfg})
 			
 			assert(patches instanceof Map)
 
