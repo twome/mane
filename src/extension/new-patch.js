@@ -1,4 +1,5 @@
 import { getActiveTabUrl } from './util.js'
+import Growl from './growl.js'
 
 let appConfig
 class NewPatch {
@@ -113,14 +114,14 @@ class NewPatch {
 					new Growl({
 						type: Growl.types.Success,
 						message: 'Patch successfully created in server memory and saved to disk.',
-						attachPoint: app.el
+						attachPoint: NewPatch.app.el
 					})
 				} else {
 					flashFail()
 					new Growl({
 						type: Growl.types.Error,
 						message: 'Failed to create patch files. The match list could be invalid, or the files could already exist.',
-						attachPoint: app.el
+						attachPoint: NewPatch.app.el
 					})
 				}
 			}, err => {
@@ -129,7 +130,7 @@ class NewPatch {
 				new Growl({
 					type: Growl.types.Error,
 					message: `Couldn't connect to the Mane server/app.`,
-					attachPoint: app.el
+					attachPoint: NewPatch.app.el
 				})
 			})
 		}

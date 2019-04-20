@@ -2,8 +2,8 @@ const path = require('path')
 
 const escapeStringRegexp = require('escape-string-regexp')
 const express = require('express')
-const open = require('open')
 const bodyParser = require('body-parser')
+const open = require('open')
 import cloneDeep from '../../node_modules/lodash-es/cloneDeep.js'
 
 import { Patch } from './patch.js'
@@ -31,7 +31,9 @@ let cache = {
 
 
 
-export const testMatcherAgainstUrl = (url, matcher, stripOutsidePeriods = false)=>{
+export const testMatcherAgainstUrl = (url, matcher, {
+	stripOutsidePeriods = false
+})=>{
 	// Turn `*.example.com.*` into `example.com`, in case the user actually misunderstood the regex format and wanted to include, eg, subdomainless URLs (which have no `.` prefix)
 	if (stripOutsidePeriods) matcher = matcher.replace(/^\**\./, '').replace(/\.\**$/, '') 
 
@@ -47,33 +49,41 @@ export const testMatcherAgainstUrl = (url, matcher, stripOutsidePeriods = false)
 }
 
 export const findMatchingPatchesForUrl = async ({
-	url, forceRefresh, 
-	memCache = cache, 
-	fsPath = config.fsPath, 
-	fsCacheFilePath = config.fsCacheFilePath, 
+	url, forceRefresh, cache,
+	cfg = config,
 	needBody = false
 }={}) => {
 	// Check memory cache for this exact url (for refreshes, duplicate tabs, history navigation etc)
-	let fromRecentUrls = memCache.recentUrlsHistory && memCache.recentUrlsHistory.get(url)
-	if (fromRecentUrls){
+	let fromRecentUrls = cache.recentUrlsHistory && cache.recentUrlsHistory.get(url)
+	if (cache.valid && fromRecentUrls && !forceRefresh){
 		fromRecentUrls.fromCache = 'specificUrl'
-		return fromRecentUrls // If we've added any new patches, we should have refilled this memCache
+		return fromRecentUrls // If we've added any new patches, we should have refilled this cache
 	}
 
-	let patchesToSearch = await getAllPatches({
-		memCache, fsCacheFilePath, fsPath, forceRefresh
+	let allOptionsProm = getOptions({cfg, cache})
+	let allPatchesProm = getAllPatches({
+		cache, cfg, forceRefresh
 	})
-	let { fromCache } = patchesToSearch
+
+	let [allOptions, allPatches] = await Promise.all([allOptionsProm, allPatchesProm])
+
+	let { fromCache } = allPatches
 	
-	let matchingPatches = [...patchesToSearch.values()].filter(patch => {
-		return patch.matchList.some(matcher => testMatcherAgainstUrl(url, matcher, config.accomodatingUrlMatching))
+	let matchingPatches = [...allPatches.values()].filter(patch => {
+		return patch.matchList.some(matcher => testMatcherAgainstUrl(url, matcher, {
+			stripOutsidePeriods: config.accomodatingUrlMatching
+		}))
+	})
+	matchingPatches = matchingPatches.map(patch => {
+		patch.options = allOptions[patch.id]
+		return patch
 	})
 	
 	// TODO: Broken
 	if (needBody){
 		matchingPatches = matchingPatches.map(async patch => {
 			try {
-				patch.assets = await getPatchAssetBodies(patch, fsPath)			
+				patch.assets = await getPatchAssetBodies(patch, config)			
 				return patch
 			} catch(err){
 				console.error('Patch asset file missing')
@@ -84,13 +94,13 @@ export const findMatchingPatchesForUrl = async ({
 	}
 
 	// Cache search result for this specific query / url
-	memCache.recentUrlsHistory.set(url, matchingPatches)
+	cache.recentUrlsHistory.set(url, matchingPatches)
 
 	matchingPatches.fromCache = fromCache // Tack on a clue as to which cache (if any) this request hit
 	
 	// TODO
 	// Attach a promise so the consumer can wait for the cache to finish updating if we need
-	// matchingPatches.cacheUpdate = !memCache.valid ? updateAllCaches(memCache, fsCacheFilePath) : false
+	// matchingPatches.cacheUpdate = !cache.valid ? updateAllCaches(cache, cfg.fsCacheFilePath) : false
 	return matchingPatches
 }
 
@@ -114,16 +124,13 @@ export const makeServer = (cfg = config) => {
 		SECURITY: foreign domain beside that which the extension popup is running from MUST NOT be able to know any contents of the Mane user's FS beside the specific matching assets. Ideally, the foreign domains don't even know that, and we insert the asset as a content script / content style, not in-page.
 	*/
 	server.get(`/${cfg.routes.patchesFor}/:urlToMatch`, (req, res) => {
-		if (config.logLevel >= 2) console.info('Extension requested patches for url:', decodeURIComponent(req.url))
+		if (cfg.logLevel >= 2) console.info('Extension requested patches for url:', decodeURIComponent(req.url))
 		
 		let urlToMatch = decodeURIComponent(req.params.urlToMatch)
 
 		findMatchingPatchesForUrl({
-			url: urlToMatch,
-			memCache: cfg.memCache || cache,
-			fsCacheFilePath: cfg.fsCacheFilePath,
-			fsPath: cfg.storageDir,
-			// needBody: true
+			cfg, cache,
+			url: urlToMatch
 		}).then(patchArr => {
 			patchArr = cloneDeep(patchArr) // Copy before customising the response
 
@@ -164,7 +171,7 @@ export const makeServer = (cfg = config) => {
 			asset.body = '/* Start writing your patch! */'
 		}
 
-		savePatchToFs(newPatch, cfg.storageDir).then(() => {
+		savePatchToFs(newPatch, { cfg, cache }).then(() => {
 			console.info('Saved new patch to fs:', newPatch)
 			for (let asset of newPatch.assets){
 				open(path.join(cfg.storageDir, asset.fileUrl))
@@ -199,7 +206,7 @@ export const makeServer = (cfg = config) => {
 		})
 	})
 
-	server.put(`/${cfg.routes.setOptions}/*`, bodyParser.json())
+	server.put(`/${cfg.routes.setOptions}/:patchId`, bodyParser.json())
 	server.put(`/${cfg.routes.setOptions}/:patchId`, (req, res, next) => {
 		getOptions({cfg})
 			.then(allOptions => {
@@ -215,9 +222,8 @@ export const makeServer = (cfg = config) => {
 			})
 			.catch(err => {
 				getAllPatches({
-					memCache: cache, 
-					fsPath: cfg.fsPath, 
-					fsCacheFilePath: cfg.fsCacheFilePath
+					cfg, 
+					cache
 				}).then(allPatches => {
 					let optionsFromScratch = [...allPatches.values()].reduce((obj, patch) => {
 						obj[patch.id] = patch.options

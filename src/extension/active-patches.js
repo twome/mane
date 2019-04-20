@@ -25,10 +25,11 @@ class ActivePatches {
 		try {
 			let url = await getActiveTabUrl(ActivePatches.app)
 				.catch(err => { throw Error('Failed getting active tab URL') })
-			this.patches = (await getMatchingPatches(url, {
+			let asArray = await getMatchingPatches(url, {
 				config: appConfig,
 				app: ActivePatches.app
-			})).reduce((map, patch) => { 
+			})
+			this.patches = asArray.reduce((map, patch) => { 
 				map.set(patch.id, patch)
 				return map 
 			}, new Map())
@@ -74,20 +75,15 @@ class ActivePatches {
 					method: 'PUT',
 					mode: 'cors',
 					headers: { 
-						'Content-Type': 'application.json'
+						'Content-Type': 'application/json'
 					},
-					// TEMP
-					// body: JSON.stringify(patch.options)
-					body: JSON.stringify({
-						on: true,
-						totallyBogus: 'excellent'
-					})
+					body: JSON.stringify(patch.options)
 				}).then(res => {
 					if (res.ok){
 						unsyncedState = null
 						new Growl({
 							type: Growl.types.Success,
-							message: 'Changed patch options and saved to disk.',
+							message: 'Changed patch options and saved to disk. Reload the page with Cmd+R / F5.',
 							attachPoint: ActivePatches.app.el
 						})	
 					} else {
@@ -125,7 +121,9 @@ class ActivePatches {
 	toHTML(){
 		let patches = [...this.patches.values()].reduce((acc, patch) => {
 			let toggle = `
-				<button class="ActivePatches_toggleEnabled neonSign ${patch.options.on ? '' : 'neonSign-off'}">
+				<button class="ActivePatches_toggleEnabled neonSign ${patch.options.on ? '' : 'neonSign-off'}"
+					title="Toggle whether this patch is 'enabled' (is injected into pages)."
+				>
 					${patch.options.on ? 'ON' : 'OFF'}
 				</button>
 			`

@@ -1,4 +1,5 @@
 const path = require('path')
+const os = require('os')
 
 export let getConfig = () => {
 	let cfg = {
@@ -12,8 +13,8 @@ export let getConfig = () => {
 		},
 		accomodatingUrlMatching: true,
 		recentUrlsHistoryLength: 500,
-		storageDir: path.join(process.cwd(), '/patches/'),
-		optionsJsonPath: path.join(process.cwd(), '/patches/options.json'),
+		// storageDir: path.join(process.cwd(), '/patches/'),		
+		// optionsJsonPath: path.join(process.cwd(), '/patches/options.json'),
 		excessLengthIndicator: '-truncated---',
 		specialCommentToken: 'patch-urls',
 		fsCacheDir: '.cache',
@@ -29,6 +30,8 @@ export let getConfig = () => {
 			Css: 2
 		}
 	}
+	cfg.storageDir = path.join(os.homedir(), '/.mane-patches')
+	cfg.optionsJsonPath = path.join(cfg.storageDir, 'options.json')
 	cfg.fsCacheFilePath = path.join(cfg.storageDir, cfg.fsCacheDir, cfg.fsCacheMatchListsFilename)
 
 	return cfg

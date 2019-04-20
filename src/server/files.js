@@ -17,13 +17,13 @@ import { SpecialCommentMissing } from './errors.js'
 
 const config = getConfig()
 
-export const getPatchAssetBodies = async (patch, fsPath = config.storageDir) => {
+export const getPatchAssetBodies = async (patch, { cfg }) => {
 	// TODO: parallelise
 	let reads
 	let assets = patch.assets.map(asset => {
 		if (!asset.fileUrl) return asset
 		reads.push(
-			readFile(path.join(fsPath, asset.fileUrl))
+			readFile(path.join(cfg.storageDir, asset.fileUrl))
 				.then(body => {
 					asset.body = body
 				}).catch(err => {
@@ -42,11 +42,17 @@ export const getOptions = async ({cfg, cache}) => {
 	return JSON.parse(fileBody)
 }
 
-export const setOptions = async (optionsObj, {cfg, cache}) => {
-	await writeFile(cfg.optionsJsonPath, JSON.stringify(optionsObj))
+export const setOptions = async (allOptions, {cfg, cache}) => {
+	await writeFile(cfg.optionsJsonPath, JSON.stringify(allOptions, undefined, 2))
 }
 
-export let importPatchJson = async (url, scheme)=>{
+export const setPatchOptions = async (id, singleOptions, {cfg, cache}) => {
+	let extant = await getOptions({cfg, cache})
+	extant[id] = singleOptions
+	await setOptions(extant, {cfg, cache})
+}
+
+export let importPatchesArchive = async (url, scheme)=>{
 	if (scheme === config.patchJsonSchema.UserJavascriptAndCSS){
 		/*
 			sites: [
@@ -88,7 +94,7 @@ export let importPatchJson = async (url, scheme)=>{
 		/*
 			{
 				assets: Object[]{
-					fileUrl: String - relative to config.storageDir
+					fileUrl: String - relative to cfg.storageDir
 					assetType: Integer - Enum config.assetTypes
 				},
 				id: String
@@ -104,8 +110,11 @@ export let importPatchJson = async (url, scheme)=>{
 }
 
 
-export let savePatchToFs = async (patch, storageDir = config.storageDir, canOverwriteExisting = false) => {
-	await makeDir(config.storageDir, { recursive: true })
+export let savePatchToFs = async (patch, {
+	cfg, cache,
+	canOverwriteExisting = false
+}) => {
+	await makeDir(cfg.storageDir, { recursive: true })
 	
 	let writes = patch.assets.map(async asset => {
 		// TODO why this undef
@@ -113,7 +122,7 @@ export let savePatchToFs = async (patch, storageDir = config.storageDir, canOver
 
 		if (asset.body === undefined) return Promise.reject(Error('Undefined body on asset provided'))
 
-		let absolutePath = path.join(storageDir, asset.fileUrl)
+		let absolutePath = path.join(cfg.storageDir, asset.fileUrl)
 
 		let extantBody
 		if (!canOverwriteExisting){
@@ -131,9 +140,11 @@ export let savePatchToFs = async (patch, storageDir = config.storageDir, canOver
 				// If there's no body, then there's nothing to lose by writing over it
 			}
 		}
-		
+
 		return writeFile(absolutePath, asset.body)
 	})
+
+	writes.push( setPatchOptions(patch.id, patch.options, { cfg, cache }) )
 	
 	return Promise.all(writes)
 }
@@ -166,7 +177,9 @@ export const updateMemCache = (patches, cache) => {
 }
 
 
-export const updateFSCache = async (patches, path = config.fsCacheFilePath) => {
+export const updateFSCache = async (patches, {
+	cfg
+}) => {
 	// Write the full list of matchLists, including ones in non-literally-named files, into FS cache
 	let forFsCacheObject = {
 		patches: patches,
@@ -174,14 +187,14 @@ export const updateFSCache = async (patches, path = config.fsCacheFilePath) => {
 	}
 
 	// Renew FS cache
-	return await writeFile(path, JSON.stringify(forFsCacheObject)) 
+	return await writeFile(cfg.fsCacheFilePath, JSON.stringify(forFsCacheObject, undefined, 2)) 
 }
 
 export const getFsCache = async ({
-	fsCacheFilePath = config.fsCacheFilePath,
+	cfg,
 	memCache
 }={}) => {
-	let previousFsCache = await readFile(fsCacheFilePath)
+	let previousFsCache = await readFile(cfg.fsCacheFilePath)
 	let previousFsCacheJson = JSON.parse(previousFsCache)
 	
 	if (memCache) memCache.lastFsWrotePatches = parseDate(previousFsCacheJson.dateWritten)	
@@ -189,29 +202,36 @@ export const getFsCache = async ({
 	return previousFsCacheJson
 }
 
-export const getPatchesFromDir = async (dirPath = config.storageDir) => {
-	let filenames = await readDir(dirPath)
+export const getPatchesFromDir = async ({ cfg, cache }) => {
+	let filenames = await readDir(cfg.storageDir)
 
 	filenames = filenames.filter(name => {
 		if (!name.match(/\.(css|js)$/)) return false // Filter out files that shouldn't be here
 		return true
 	})
+
+	let allOptions = await getOptions({cfg, cache})
 	
 	let fileData = []
 	for (let name of filenames){
-		let file = new Promise(async (resolve, rej)=>{
+		let file = new Promise(async (resolve)=>{
 			let matchListStr, id
 			if (name.match(config.excessLengthIndicator)){ 
 				// In the past, this file had to be saved with a randomly-generated ID + indicator string instead of the literal stringified matchList
 
 				// Go inside the file and look for the special comment
-				matchListStr = await getMatchListFromWithinFile(path.join(dirPath, name))
+				matchListStr = await getMatchListFromWithinFile(path.join(cfg.storageDir, name))
 			} else {
 				// The filename already is the matchList
 				matchListStr = name.replace(/\.(css|js)\s*$/, '')
 			}
 			id = name.replace(/\.(css|js)\s*$/, '') // Remove file extension and use the filename as ID
-			resolve({name, matchListStr, id})
+			resolve({
+				name, 
+				matchListStr, 
+				id,
+				options: allOptions[id]
+			})
 		})
 		fileData.push(file)
 	}
@@ -238,11 +258,12 @@ export const getPatchesFromDir = async (dirPath = config.storageDir) => {
 }
 
 export const getAllPatches = async function({
-	memCache, 
-	fsCacheFilePath = config.fsCacheFilePath,
-	fsPath = config.storageDir,
-	forceRefresh = false
+	cache, 
+	forceRefresh = false,
+	cfg
 }={}){
+	let memCache = cache
+
 	// TODO: Comparing cache contents (rather than mere existence) to determine whether the next stage of caching is necessary
 	let fromCache
 
@@ -258,7 +279,7 @@ export const getAllPatches = async function({
 	if (!forceRefresh){
 		// Read FS cache
 		try {
-			let previousFsCacheJson = await getFsCache({memCache, fsCacheFilePath})
+			let previousFsCacheJson = await getFsCache({memCache, cfg})
 			
 			// Instatiate all the JSON-ified plain objects into instances in memory
 			previousFsCacheJson.patches.forEach((plainObject) => {
@@ -268,26 +289,31 @@ export const getAllPatches = async function({
 			fromCache = 'fsCacheFile'
 		} catch (err){
 			// No extant FS cache file; instead, we must read dir contents
-			foundPatches = await getPatchesFromDir(fsPath)
+			foundPatches = await getPatchesFromDir({cfg, cache})
 			fromCache = 'none'
 		}
 	} else {
-		foundPatches = await getPatchesFromDir(fsPath)
+		foundPatches = await getPatchesFromDir({cfg, cache})
 		fromCache = 'noneForced'
 	}
 
 	foundPatches.fromCache = fromCache
+
 	return foundPatches
 }
 
 
-export const updateAllCaches = async ({memCache, fsCacheFilePath, fsPath}={}) => {
+export const updateAllCaches = async ({
+	cfg, 
+	cache
+}={}) => {
+	let memCache = cache
 	let freshPatches = await getAllPatches({
-		memCache, fsCacheFilePath, fsPath,
+		cache: memCache, cfg,
 		forceRefresh: true
 	})
 	await Promise.all[
-		updateFSCache(freshPatches, fsCacheFilePath),
+		updateFSCache(freshPatches, cfg.fsCacheFilePath),
 		updateMemCache(freshPatches, memCache)
 	]
 	memCache.valid = true

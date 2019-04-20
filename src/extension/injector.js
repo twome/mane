@@ -21,7 +21,9 @@ try {
 
 
 for (let patch of patches){
-	if (!patch.options.on) continue
+	if (!patch.options.on){
+		continue // Don't inject disabled patches
+	}
 	for (let asset of patch.assets){
 		
 		/*
@@ -54,7 +56,6 @@ for (let patch of patches){
 		document.head.appendChild(importInvocation)
 		if (logInjections) console.info(`Mane: injected ${asset.fileUrl}`)
 	}
-	
 }
 
 })()
