@@ -91,6 +91,12 @@ Install Chrome extension [User Javascript & CSS](https://chrome.google.com/webst
 
 To use this JS / CSS, go to any page in your browser, click the User Javascript & CSS button, click 'Add new' and then copy the contents of these files into the relevant panes. "UJS&CSS" will then automatically detect any time you visit a URL that is based on your current page's domain (eg "twitter.com"), and will add these files into the page.
 
+## We use the work of:
+
+Icons made by <div><a href="https://www.flaticon.com/authors/google" title="Google">Google</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+
+<a href="https://icons8.com/windows-icons">Windows icons by Icons8</a>
+
 ## License
 
 MIT
