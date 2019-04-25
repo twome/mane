@@ -1,0 +1,6 @@
+{
+  "main": "background-bootstrap.js",
+  "devDependencies": {
+    "electron": "^4.1.4"
+  }
+}

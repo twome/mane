@@ -1,0 +1,24 @@
+/*
+	## Color palette
+
+	dark - hsla(29, 100%, 6%, 1)
+	light - hsla(69, 100%, 96%, 1)
+	light-d - hsl(53, 100%, 79%)
+	green - hsla(97, 100%, 75%, 1)
+	brown - hsla(24, 94%, 14%, 1)
+	orange - hsla(33, 93%, 54%, 1)
+	tan - hsla(38, 93%, 77%, 1)
+
+	## Font stack
+
+	body - 'Inter UI', 'Helvetica Neue', 'Helvetica', 'Source Sans Pro', 'Arial', sans-serif;
+ */
+
+ body {
+ 	/*-webkit-app-region: drag;*/
+ 	/*user-select: none;*/
+
+	background-color: hsla(29, 100%, 6%, 1);
+	color: hsla(69, 100%, 96%, 1);
+}
+

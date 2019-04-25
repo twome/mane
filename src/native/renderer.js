@@ -1,0 +1,1 @@
+console.debug('Hi from the renderer.')
