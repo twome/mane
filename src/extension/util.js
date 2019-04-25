@@ -58,6 +58,11 @@ export const getActiveAssets = (app) => {
 	return assets
 }
 
+export const makePatchMapFromStrings = matchListStrings => new Map(matchListStrings.map(matchListString => {
+	let patch = new Patch(matchListString)
+	return [patch.id, patch]
+}))
+
 export const assetsToPatchMap = assets => {
 	let patches = new Map()
 	assets.forEach(asset => {
@@ -133,3 +138,6 @@ export const getMatchingPatches = async (url, {app}) => {
 	if (response.ok) return await response.json()
 	throw response
 }
+
+export const resolveIn = waitMs => new Promise(resolve => setTimeout(resolve, waitMs))
+export const rejectIn = waitMs => new Promise((res, reject) => setTimeout(reject, waitMs))

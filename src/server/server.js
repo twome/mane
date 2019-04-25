@@ -8,7 +8,7 @@ import cloneDeep from '../../node_modules/lodash-es/cloneDeep.js'
 
 import { Patch } from './patch.js'
 import { raceTimer } from './util.js'
-import { 
+import {
 	getAllPatches,
 	getPatchAssetBodies,
 	savePatchToFs,
@@ -35,11 +35,11 @@ export const testMatcherAgainstUrl = (url, matcher, {
 	stripOutsidePeriods = false
 })=>{
 	// Turn `*.example.com.*` into `example.com`, in case the user actually misunderstood the regex format and wanted to include, eg, subdomainless URLs (which have no `.` prefix)
-	if (stripOutsidePeriods) matcher = matcher.replace(/^\**\./, '').replace(/\.\**$/, '') 
+	if (stripOutsidePeriods) matcher = matcher.replace(/^\**\./, '').replace(/\.\**$/, '')
 
 	// Escape all URL characters that would have regex functionality
 	matcher = escapeStringRegexp(matcher)
-	
+
 	// Turn 'wildcard/glob'-style "match anything" commands into the right RegExp tokens
 	// NB: We don't need these wildcards at the beginning/end of matchers, as the matchers are already looking for a partial match in the whole string
 	matcher = matcher.replace(/\\\*/g, '.*')
@@ -68,7 +68,7 @@ export const findMatchingPatchesForUrl = async ({
 	let [allOptions, allPatches] = await Promise.all([allOptionsProm, allPatchesProm])
 
 	let { fromCache } = allPatches
-	
+
 	let matchingPatches = [...allPatches.values()].filter(patch => {
 		return patch.matchList.some(matcher => testMatcherAgainstUrl(url, matcher, {
 			stripOutsidePeriods: config.accomodatingUrlMatching
@@ -78,12 +78,12 @@ export const findMatchingPatchesForUrl = async ({
 		patch.options = allOptions[patch.id]
 		return patch
 	})
-	
+
 	// TODO: Broken
 	if (needBody){
 		matchingPatches = matchingPatches.map(async patch => {
 			try {
-				patch.assets = await getPatchAssetBodies(patch, config)			
+				patch.assets = await getPatchAssetBodies(patch, config)
 				return patch
 			} catch(err){
 				console.error('Patch asset file missing')
@@ -97,17 +97,20 @@ export const findMatchingPatchesForUrl = async ({
 	cache.recentUrlsHistory.set(url, matchingPatches)
 
 	matchingPatches.fromCache = fromCache // Tack on a clue as to which cache (if any) this request hit
-	
+
 	// TODO
 	// Attach a promise so the consumer can wait for the cache to finish updating if we need
 	// matchingPatches.cacheUpdate = !cache.valid ? updateAllCaches(cache, cfg.fsCacheFilePath) : false
 	return matchingPatches
 }
 
-export const makePatchMapFromStrings = matchListStrings => new Map(matchListStrings.map(matchListString => {
-	let patch = new Patch(matchListString)
-	return [patch.id, patch]
-})) 
+
+
+export const openStorageDir = (cfg = config) => {
+	open(cfg.storageDir)
+}
+
+
 
 export const makeServer = (cfg = config) => {
 	let server = express()
@@ -118,14 +121,14 @@ export const makeServer = (cfg = config) => {
 		res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
 		next()
 	})
-	
+
 	/*
 		TODO
 		SECURITY: foreign domain beside that which the extension popup is running from MUST NOT be able to know any contents of the Mane user's FS beside the specific matching assets. Ideally, the foreign domains don't even know that, and we insert the asset as a content script / content style, not in-page.
 	*/
 	server.get(`/${cfg.routes.patchesFor}/:urlToMatch`, (req, res) => {
 		if (cfg.logLevel >= 2) console.info('Extension requested patches for url:', decodeURIComponent(req.url))
-		
+
 		let urlToMatch = decodeURIComponent(req.params.urlToMatch)
 
 		findMatchingPatchesForUrl({
@@ -134,7 +137,7 @@ export const makeServer = (cfg = config) => {
 		}).then(patchArr => {
 			patchArr = cloneDeep(patchArr) // Copy before customising the response
 
-			// ~ map of validating query commands/values 
+			// ~ map of validating query commands/values
 
 			if (req.query['include-body'] === 'false'){
 
@@ -181,7 +184,7 @@ export const makeServer = (cfg = config) => {
 			res.type('json') // Content-Type
 			res.send({
 				newPatch
-			})	
+			})
 		}).catch(err => {
 			console.error('Save failed:', err)
 			res.status(500)
@@ -206,6 +209,20 @@ export const makeServer = (cfg = config) => {
 		})
 	})
 
+	server.get(`/${cfg.routes.openStorage}`, (req, res) => {
+		/*
+			TODO
+			SECURITY: foreign domains beside that which the extension popup is running from MUST NOT be able to tell this server to open anything in the native OS
+		*/
+		openStorageDir(cfg).then(() => {
+			res.status(200)
+			res.send(`File attempted to open using the default app in the Mane server's OS (we cannot know whether or not it opened successfully in a useful/meaningful way.`)
+		}, err => {
+			res.status(500)
+			res.send(`Server couldn't open file`)
+		})
+	})
+
 	server.put(`/${cfg.routes.setOptions}/:patchId`, bodyParser.json())
 	server.put(`/${cfg.routes.setOptions}/:patchId`, (req, res, next) => {
 		getOptions({cfg})
@@ -218,11 +235,11 @@ export const makeServer = (cfg = config) => {
 					.catch(err => {
 						res.status(500)
 						res.send(`Couldn't write options to FS`)
-					})	
+					})
 			})
 			.catch(err => {
 				getAllPatches({
-					cfg, 
+					cfg,
 					cache
 				}).then(allPatches => {
 					let optionsFromScratch = [...allPatches.values()].reduce((obj, patch) => {
@@ -238,7 +255,7 @@ export const makeServer = (cfg = config) => {
 						.catch(err => {
 							res.status(500)
 							res.send(`Couldn't write options to FS`)
-						})	
+						})
 				})
 			})
 	})

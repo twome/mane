@@ -9,11 +9,12 @@ export let getConfig = () => {
 			createPatchFile: 'create-patch', // TODO: just POST on routes.patches/:id
 			openFileNative: 'open-file',
 			setOptions: 'set-options',
-			patches: 'patches'
+			patches: 'patches',
+			openStorage: 'open-storage'
 		},
 		accomodatingUrlMatching: true,
 		recentUrlsHistoryLength: 500,
-		// storageDir: path.join(process.cwd(), '/patches/'),		
+		// storageDir: path.join(process.cwd(), '/patches/'),
 		// optionsJsonPath: path.join(process.cwd(), '/patches/options.json'),
 		excessLengthIndicator: '-truncated---',
 		specialCommentToken: 'patch-urls',
