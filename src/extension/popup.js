@@ -3,7 +3,7 @@
 import Growl from './growl.js'
 import NewPatch from './new-patch.js'
 import ActivePatches from './active-patches.js'
-import { 
+import {
 	last,
 	fileExtension,
 	getActiveAssets,
@@ -38,7 +38,6 @@ let app = {
 app.componentTypes.forEach(type => {
 	type.app = app
 })
-
 
 if (!app.weApiAvailable){
 	if (app.chromeWeApiAvailable) window.browser = chrome

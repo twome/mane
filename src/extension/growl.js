@@ -1,3 +1,5 @@
+import { resolveIn } from './util.js'
+
 let instanceList = new WeakSet()
 
 export default class Growl {
@@ -6,7 +8,7 @@ export default class Growl {
 		/*Enum - Growl.types*/type = Growl.types.Error,
 		/*Boolean*/showImmediately = true,
 		/*HTMLElement*/attachPoint = document.body,
-		/*Number*/lifespanMs = 3000 // Set to 0 for infinite
+		/*Number*/lifespanMs = 5000 // Set to 0 for infinite
 	}){
 		instanceList.add(this)
 		Object.assign(this, { message, type, attachPoint, lifespanMs })
@@ -34,13 +36,13 @@ export default class Growl {
 			if (!!showImmediately){
 				this.shown = true
 				this.render()
-			}	
+			}
 		})
-		
+
 		// Start lifespan time to self-remove
 		if (lifespanMs !== 0){
 			setTimeout(() => {
-				// this.kill()
+				this.kill()
 			}, lifespanMs)
 		}
 	}
@@ -64,7 +66,7 @@ export default class Growl {
 
 		let transition = this.waitForTransition()
 		this.el.classList.remove(this.stateClasses.trickHidden)
-		
+
 		await transition
 	}
 
@@ -93,7 +95,7 @@ export default class Growl {
 			this.el = document.createElement('div')
 			this.el.classList.add('Growl')
 			this.el.classList.add(this.typeClasses.get(this.type))
-			
+
 			let message = document.createElement('span')
 			message.innerText = this.message
 			this.el.appendChild(message)
@@ -113,7 +115,7 @@ export default class Growl {
 
 	async kill(){
 		this.shown = false
-		await this.render()
+		await [this.render(), resolveIn(1000)]
 		// await this.waitForTransition()
 
 		if (this.attachPoint) this.attachPoint.removeChild(this.el)
