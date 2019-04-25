@@ -1,13 +1,11 @@
 {
   "name": "mane",
-  "version": "0.1.0",
-
-  "main": "src/server.js",
-  "programmatic-module": "src/server.js",
-
-  "bin": "bin/mane.js",
-  "cli-executable": "bin/mane.js",
-
+  "version": "0.2.0",
+  "description": "A Node + WebExtension app that automatically inserts your custom JavaScript and CSS files, stored on your hard drive, into web pages to customise them.",
+  "main": "bin/programmatic.js",
+  "programmatic-module": "bin/programmatic.js",
+  "bin": "bin/cli.js",
+  "cli-executable": "bin/cli.js",
   "author": "Tom Kenny <tom@twome.name>",
   "license": "MIT",
 

@@ -5,7 +5,6 @@
 
 	To use github.com/standard-things/esm, run `node -r esm bin/mane.js`
 */
-
 import { makeServer } from '../src/server/server.js'
 
 let port = 1917
