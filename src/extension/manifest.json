@@ -8,8 +8,7 @@
 	"description": "Inserts your homemade JS & CSS patches into any pages you want.",
 
 	"icons": {
-		"41": "images/mane_16.png",
-		"16": "images/mane_16.png"
+		"16": "../images/mane_16.png"
 	},
 
 	"content_scripts": [
@@ -20,7 +19,7 @@
 	],
 
 	"browser_action": {
-		"default_icon": "images/mane_16.png",
+		"default_icon": "../images/mane_16.png",
 		"default_title": "Mane",
 		"default_popup": "popup.html"
 	},
@@ -28,7 +27,7 @@
 	"permissions": [
 		"activeTab" // So the popup / main extension "button" can tell which tab is currently active, and thus: use the current tab's URL to check which patches should be active, and autofill the current tab's domain into the "New patch" matcher list)
 	],
-	
+
 	// Metadata for Firefox identification
 	"applications": {
 		"gecko": {
