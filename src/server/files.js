@@ -36,20 +36,41 @@ export const getPatchAssetBodies = async (patch, { cfg }) => {
 	return assets
 }
 
-export const getOptions = async ({cfg, cache}) => {
+export const createPatchOptionsFromDir = async ({cfg, cache}) => {
+	let allPatches = await getAllPatches({
+		cfg,
+		cache
+	})
+
+	let optionsFromScratch = [...allPatches.values()].reduce((obj, patch) => {
+		obj[patch.id] = patch.options
+		return obj
+	}, {})
+
+	return await setPatchOptions(optionsFromScratch, {cfg, cache})
+}
+
+export const getPatchOptions = async ({cfg, cache}) => {
 	// TODO use cache
-	let fileBody = await readFile(cfg.optionsJsonPath, 'utf8')
+
+	let fileBody
+	try {
+		fileBody = await readFile(cfg.optionsJsonPath, 'utf8')
+	} catch (err){
+		await createPatchOptionsFromDir({cfg, cache})
+		fileBody = await readFile(cfg.optionsJsonPath, 'utf8')
+	}
 	return JSON.parse(fileBody)
 }
 
-export const setOptions = async (allOptions, {cfg, cache}) => {
+export const setPatchOptions = async (allOptions, {cfg, cache}) => {
 	await writeFile(cfg.optionsJsonPath, JSON.stringify(allOptions, undefined, 2))
 }
 
-export const setPatchOptions = async (id, singleOptions, {cfg, cache}) => {
-	let extant = await getOptions({cfg, cache})
+export const setSinglePatchOptions = async (id, singleOptions, {cfg, cache}) => {
+	let extant = await getPatchOptions({cfg, cache})
 	extant[id] = singleOptions
-	await setOptions(extant, {cfg, cache})
+	await setPatchOptions(extant, {cfg, cache})
 }
 
 export let importPatchesArchive = async (url, scheme)=>{
@@ -69,7 +90,7 @@ export let importPatchesArchive = async (url, scheme)=>{
 					}
 				}
 			]
-		*/	
+		*/
 
 		let jsonString = await readFile(url, 'utf-8')
 		let originalFormat = JSON.parse(jsonString)
@@ -79,7 +100,7 @@ export let importPatchesArchive = async (url, scheme)=>{
 			let matchList = site.id.split(',').map(matcher => matcher.trim())
 			let { css, js } = site
 			let { on } = site.options
-			
+
 			jsonPatches.push(new Patch({
 				matchList, css, js,
 				options: {
@@ -115,12 +136,13 @@ export let savePatchToFs = async (patch, {
 	canOverwriteExisting = false
 }) => {
 	await makeDir(cfg.storageDir, { recursive: true })
-	
+
 	let writes = patch.assets.map(async asset => {
 		// TODO why this undef
 		console.info('Writing asset:', asset)
 
 		if (asset.body === undefined) return Promise.reject(Error('Undefined body on asset provided'))
+		if (!asset.fileUrl) return Promise.reject(Error('Asset missing fileUrl'))
 
 		let absolutePath = path.join(cfg.storageDir, asset.fileUrl)
 
@@ -135,7 +157,7 @@ export let savePatchToFs = async (patch, {
 				if (err.name.match(/ENOENT/i) || err.message.match(/ENOENT/i)){
 					// File doesn't exist; we're good to create a new one!
 				} else if (extantBody.length){
-					throw err 	
+					throw err
 				}
 				// If there's no body, then there's nothing to lose by writing over it
 			}
@@ -144,8 +166,8 @@ export let savePatchToFs = async (patch, {
 		return writeFile(absolutePath, asset.body)
 	})
 
-	writes.push( setPatchOptions(patch.id, patch.options, { cfg, cache }) )
-	
+	writes.push( setSinglePatchOptions(patch.id, patch.options, { cfg, cache }) )
+
 	return Promise.all(writes)
 }
 
@@ -171,7 +193,7 @@ const patchArrToMap = patchesArr => {
 
 export const updateMemCache = (patches, cache) => {
 	// Renew mem cache
-	cache.patches = patches 
+	cache.patches = patches
 	cache.lastFsWrotePatches = new Date()
 	cache.valid = true
 }
@@ -187,7 +209,7 @@ export const updateFSCache = async (patches, {
 	}
 
 	// Renew FS cache
-	return await writeFile(cfg.fsCacheFilePath, JSON.stringify(forFsCacheObject, undefined, 2)) 
+	return await writeFile(cfg.fsCacheFilePath, JSON.stringify(forFsCacheObject, undefined, 2))
 }
 
 export const getFsCache = async ({
@@ -196,8 +218,8 @@ export const getFsCache = async ({
 }={}) => {
 	let previousFsCache = await readFile(cfg.fsCacheFilePath)
 	let previousFsCacheJson = JSON.parse(previousFsCache)
-	
-	if (memCache) memCache.lastFsWrotePatches = parseDate(previousFsCacheJson.dateWritten)	
+
+	if (memCache) memCache.lastFsWrotePatches = parseDate(previousFsCacheJson.dateWritten)
 
 	return previousFsCacheJson
 }
@@ -210,13 +232,13 @@ export const getPatchesFromDir = async ({ cfg, cache }) => {
 		return true
 	})
 
-	let allOptions = await getOptions({cfg, cache})
-	
+	let allOptions = await getPatchOptions({cfg, cache})
+
 	let fileData = []
 	for (let name of filenames){
 		let file = new Promise(async (resolve)=>{
 			let matchListStr, id
-			if (name.match(config.excessLengthIndicator)){ 
+			if (name.match(config.excessLengthIndicator)){
 				// In the past, this file had to be saved with a randomly-generated ID + indicator string instead of the literal stringified matchList
 
 				// Go inside the file and look for the special comment
@@ -227,8 +249,8 @@ export const getPatchesFromDir = async ({ cfg, cache }) => {
 			}
 			id = name.replace(/\.(css|js)\s*$/, '') // Remove file extension and use the filename as ID
 			resolve({
-				name, 
-				matchListStr, 
+				name,
+				matchListStr,
 				id,
 				options: allOptions[id]
 			})
@@ -243,7 +265,7 @@ export const getPatchesFromDir = async ({ cfg, cache }) => {
 		file.matchList = file.matchListStr.trim().split(',') // String ID to matchers array
 
 		let extantPatch = patches.get(file.id) || new Patch(file) // Re-use the same patch made from a different asset file with the same ID, if needed
-	
+
 		let fileExtension = last(file.name.split('.'))
 		if (fileExtension === 'js'){
 			extantPatch.addAsset(config.assetTypes.Js, file.name)
@@ -258,7 +280,7 @@ export const getPatchesFromDir = async ({ cfg, cache }) => {
 }
 
 export const getAllPatches = async function({
-	cache, 
+	cache,
 	forceRefresh = false,
 	cfg
 }={}){
@@ -280,7 +302,7 @@ export const getAllPatches = async function({
 		// Read FS cache
 		try {
 			let previousFsCacheJson = await getFsCache({memCache, cfg})
-			
+
 			// Instatiate all the JSON-ified plain objects into instances in memory
 			previousFsCacheJson.patches.forEach((plainObject) => {
 				foundPatches.push(new Patch(plainObject))
@@ -304,7 +326,7 @@ export const getAllPatches = async function({
 
 
 export const updateAllCaches = async ({
-	cfg, 
+	cfg,
 	cache
 }={}) => {
 	let memCache = cache

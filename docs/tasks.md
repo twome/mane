@@ -2,7 +2,7 @@
 
 BUG FEAT DEBT
 
-
+- BUG 1: new patch tries to write to the whole dir!!
 
 - BUG 1: forewarn if no connection to server (incl FEAT 3: greyed icon)
 

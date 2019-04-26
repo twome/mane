@@ -115,7 +115,7 @@ let createTray = async () => {
 		showBackupMenu()
 	})
 
-	if (process.env.NODE_ENV === 'development') app.dock.hide() // We don't need a dock icon for a tray-only app
+	if (process.env.NODE_ENV !== 'development') app.dock.hide() // We don't need a dock icon for a tray-only app
 
 	try {
 		// let connections = await connectToBrowsers()

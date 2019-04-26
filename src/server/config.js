@@ -8,7 +8,7 @@ export let getConfig = () => {
 			patchesFor: 'patches-for',
 			createPatchFile: 'create-patch', // TODO: just POST on routes.patches/:id
 			openFileNative: 'open-file',
-			setOptions: 'set-options',
+			setPatchOptions: 'set-options',
 			patches: 'patches',
 			openStorage: 'open-storage'
 		},
@@ -20,6 +20,10 @@ export let getConfig = () => {
 		specialCommentToken: 'patch-urls',
 		fsCacheDir: '.cache',
 		fsCacheMatchListsFilename: 'fs-cache-matchlists.json',
+
+		// Patch filenames
+		maxFilenameLength: 60,
+		shortIdLength: 6,
 
 		// Enums
 		patchJsonSchema: {

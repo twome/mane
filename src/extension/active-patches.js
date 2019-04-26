@@ -15,9 +15,9 @@ class ActivePatches {
 
 		// TODO: Highlight the active matcher within each matchList (send from server?)
 		this.activeMatcher = 'www.google.com' // TEMP TEST
-		
+
 		this.updateVm().then(() => {
-			this.render()	
+			this.render()
 		})
 	}
 
@@ -29,9 +29,9 @@ class ActivePatches {
 				config: appConfig,
 				app: ActivePatches.app
 			})
-			this.patches = asArray.reduce((map, patch) => { 
+			this.patches = asArray.reduce((map, patch) => {
 				map.set(patch.id, patch)
-				return map 
+				return map
 			}, new Map())
 		} catch (err) {
 			console.error(`Failed getting matching patches`, err)
@@ -50,7 +50,7 @@ class ActivePatches {
 				fetch(`${appConfig.patchHost}/${appConfig.routes.openFileNative}/${encodeURIComponent(el.dataset.openingSrc)}`, {
 					method: 'GET',
 					mode: 'cors',
-					headers: { 
+					headers: {
 						'Content-Type': 'application.json'
 					}
 				})
@@ -62,19 +62,19 @@ class ActivePatches {
 			let id = el.dataset.patchId
 			let patch = this.patches.get(id)
 			let toggleEl = el.querySelector('.ActivePatches_toggleEnabled')
-			
+
 			let unsyncedState = null
 			toggleEl.addEventListener('click', (event) => {
 				unsyncedState = unsyncedState !== null ? unsyncedState : patch.options.on // Remember until saved to server
 				patch.options.on = !patch.options.on
 				this.patches.set(id, patch)
 				this.render()
-								
+
 				// Update this patch on the server
-				fetch(`${appConfig.patchHost}/${appConfig.routes.setOptions}/${encodeURIComponent(id)}`, {
+				fetch(`${appConfig.patchHost}/${appConfig.routes.setPatchOptions}/${encodeURIComponent(id)}`, {
 					method: 'PUT',
 					mode: 'cors',
-					headers: { 
+					headers: {
 						'Content-Type': 'application/json'
 					},
 					body: JSON.stringify(patch.options)
@@ -85,7 +85,7 @@ class ActivePatches {
 							type: Growl.types.Success,
 							message: 'Changed patch options and saved to disk. Reload the page with Cmd+R / F5.',
 							attachPoint: ActivePatches.app.el
-						})	
+						})
 					} else {
 						patch.options.on = unsyncedState
 						unsyncedState = null
@@ -133,15 +133,15 @@ class ActivePatches {
 					<span class="ActivePatches_matcher ${matcher === this.activeMatcher ? 'ActivePatches_matcher-active' : ''}"
 						${matcher === this.activeMatcher ? 'title="The matcher which activated this patch for this current page\'s URL"' : ''}
 					>
-						${matcher} 
-					</span> 
+						${matcher}
+					</span>
 				`
 			}, '')
 
 			let assets = patch.assets.reduce((acc, asset) => {
 				let assetPath = `${asset.fileUrl}`
 				return acc + `
-					<a href="${appConfig.patchHost}/${assetPath}" 
+					<a href="${appConfig.patchHost}/${assetPath}"
 						data-opening-src="${assetPath}"
 						class="ActivePatches_asset boxLink"
 						title="Open file in your default native application"
@@ -160,7 +160,7 @@ class ActivePatches {
 					<span class="ActivePatches_assets">
 						${assets}
 					</span>
-				</li> 
+				</li>
 			`
 		}, '')
 

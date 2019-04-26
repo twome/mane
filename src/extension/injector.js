@@ -19,8 +19,14 @@ try {
 	patches = [] // Act as if we simply got an empty response
 }
 
-
 for (let patch of patches){
+	if (!patch.options){
+		// Use defaults if missing
+		patch.options = {
+			on: true,
+			waitForDomContentLoaded: true
+		}
+	}
 	if (!patch.options.on){
 		continue // Don't inject disabled patches
 	}

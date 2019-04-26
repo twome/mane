@@ -19,7 +19,7 @@ let config = {
 	routes: {
 		createPatchFile: 'create-patch',
 		openFileNative: 'open-file',
-		setOptions: 'set-options',
+		setPatchOptions: 'set-options',
 		patches: 'patches',
 	},
 	btnAnimationTimeMs: 2000

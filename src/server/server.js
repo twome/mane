@@ -12,8 +12,8 @@ import {
 	getAllPatches,
 	getPatchAssetBodies,
 	savePatchToFs,
-	setOptions,
-	getOptions
+	setSinglePatchOptions,
+	getPatchOptions
 } from './files.js'
 import { getConfig } from './config.js'
 
@@ -60,7 +60,7 @@ export const findMatchingPatchesForUrl = async ({
 		return fromRecentUrls // If we've added any new patches, we should have refilled this cache
 	}
 
-	let allOptionsProm = getOptions({cfg, cache})
+	let allOptionsProm = getPatchOptions({cfg, cache})
 	let allPatchesProm = getAllPatches({
 		cache, cfg, forceRefresh
 	})
@@ -103,8 +103,6 @@ export const findMatchingPatchesForUrl = async ({
 	// matchingPatches.cacheUpdate = !cache.valid ? updateAllCaches(cache, cfg.fsCacheFilePath) : false
 	return matchingPatches
 }
-
-
 
 export const openStorageDir = (cfg = config) => {
 	open(cfg.storageDir)
@@ -223,40 +221,15 @@ export const makeServer = (cfg = config) => {
 		})
 	})
 
-	server.put(`/${cfg.routes.setOptions}/:patchId`, bodyParser.json())
-	server.put(`/${cfg.routes.setOptions}/:patchId`, (req, res, next) => {
-		getOptions({cfg})
-			.then(allOptions => {
-				allOptions[decodeURIComponent(req.params.patchId)] = req.body
-				setOptions(allOptions, { cfg, cache })
-					.then(() => {
-						res.sendStatus(200)
-					})
-					.catch(err => {
-						res.status(500)
-						res.send(`Couldn't write options to FS`)
-					})
+	server.put(`/${cfg.routes.setPatchOptions}/:patchId`, bodyParser.json())
+	server.put(`/${cfg.routes.setPatchOptions}/:patchId`, (req, res, next) => {
+		setSinglePatchOptions(decodeURIComponent(req.params.patchId), req.body, {cfg, cache})
+			.then(() => {
+				res.sendStatus(200)
 			})
 			.catch(err => {
-				getAllPatches({
-					cfg,
-					cache
-				}).then(allPatches => {
-					let optionsFromScratch = [...allPatches.values()].reduce((obj, patch) => {
-						obj[patch.id] = patch.options
-						return obj
-					}, {})
-
-					optionsFromScratch[decodeURIComponent(req.params.patchId)] = req.body
-					setOptions(optionsFromScratch, { cfg, cache })
-						.then(() => {
-							res.send(200)
-						})
-						.catch(err => {
-							res.status(500)
-							res.send(`Couldn't write options to FS`)
-						})
-				})
+				res.status(500)
+				res.send(`Couldn't write options to FS`)
 			})
 	})
 
