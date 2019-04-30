@@ -1,3 +1,5 @@
+/* global browser */
+
 // TEMP DEV
 let mockUrlToCheck = 'https://mockurl.example.com/a-path?fake-query=sure'
 let mockAssets = [
@@ -135,8 +137,22 @@ export const getMatchingPatches = async (url, {app}) => {
 	let response = await fetch(patchRequestPath, {
 		mode: 'cors'
 	})
-	if (response.ok) return await response.json()
-	throw response
+	if (response.ok) {
+		let patchArr = await response.json()
+		console.debug({patchArr})
+		for (let patch of patchArr){
+			if (!patch.options){
+				console.error('Matching patch had no options; filling with defaults', patch)
+				patch.options = {
+					on: true,
+					waitForDomContentLoaded: true
+				}
+			}
+		}
+		return patchArr
+	} else {
+		throw response
+	}
 }
 
 export const resolveIn = waitMs => new Promise(resolve => setTimeout(resolve, waitMs))
