@@ -39,10 +39,11 @@ export class Patch {
 
 		// Blend in options defaults
 		options = Object.assign(options, {
-			on: true
+			on: true,
+			whenToRun: 'dom'
 		})
 
-		Object.assign(this, { options, assets })
+		Object.assign(this, { options, assets, matchListInComment })
 
 		if (!matchList || !Array.isArray(matchList)) throw Error('Must provide an array-of-strings matchList')
  		if (matchList.length < 1){
@@ -59,10 +60,13 @@ export class Patch {
 		*/
 		let concatenatedMatchList = this.matchList.join(',')
 		let assetUrls = this.assets.map(asset => asset.fileUrl)
-		let alreadyTruncated = assetUrls.some(url => url.match(config.excessLengthIndicator))
+		let isAlreadyTruncated = assetUrls.some(url => url.match(config.excessLengthIndicator))
+
+		if (isAlreadyTruncated) this.matchListInComment = true
+
 		if (id){
 			this.id = id
-		} else if (alreadyTruncated){
+		} else if (isAlreadyTruncated){
 			for (let url of assetUrls){
 				url = url.substr(0, url.length - 1)
 				if (url !== this.id) throw Error('Assets for the same patch have differing IDs in their filenames')

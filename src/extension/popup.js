@@ -3,15 +3,6 @@
 import Growl from './growl.js'
 import NewPatch from './new-patch.js'
 import ActivePatches from './active-patches.js'
-import {
-	last,
-	fileExtension,
-	getActiveAssets,
-	assetsToPatchMap,
-	getActivePatches,
-	getActiveTabUrl,
-	getMatchingPatches
-} from './util.js'
 
 // Options
 let config = {
@@ -32,7 +23,7 @@ let app = {
 	instances: new Set(),
 	componentTypes: [NewPatch, ActivePatches, Growl],
 	weApiAvailable: typeof browser !== 'undefined', // WebExtensions 'browser'/'chrome' API object present in global object
-	chromeWeApiAvailable: typeof chrome !== 'undefined' && chrome.tabs // Account for Chrome's non-spec WE API implementation
+	chromeWeApiAvailable: typeof chrome !== 'undefined' && !!chrome.tabs // Account for Chrome's non-spec WE API implementation
 }
 // Add this to the constructor for each component to share it without boilerplate
 app.componentTypes.forEach(type => {

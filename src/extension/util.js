@@ -143,11 +143,12 @@ export const getMatchingPatches = async (url, {app}) => {
 		for (let patch of patchArr){
 			if (!patch.options){
 				console.error('Matching patch had no options; filling with defaults', patch)
-				patch.options = {
-					on: true,
-					waitForDomContentLoaded: true
-				}
+				patch.options = {}
 			}
+			Object.assign(patch.options, {
+				on: true,
+				whenToRun: 'dom'
+			})
 		}
 		return patchArr
 	} else {

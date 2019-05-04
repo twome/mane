@@ -1,44 +1,69 @@
+/*
+	This file runs as a 'content script', within a separate execution context (although the same DOM/frame) to the main 'page scripts'. Relative URLs stem from chrome-extension://${EXTENSION_ID}/injector.js
+*/
 ;(async function iifeForAwait(){
 
 // Options
-let patchHost = 'http://localhost:1917'
-let logInjections = true
+// This is hard-coded & duplicated from popup.js to avoid needing to fetch config from the background or popup extension JS
+let cfg = {
+	logInjections: true,
+	patchHost: 'http://localhost:1917',
+	routes: {
+		createPatchFile: 'create-patch',
+		openFileNative: 'open-file',
+		setPatchOptions: 'set-options',
+		patches: 'patches',
+	}
+}
+// This is also hard-coded & duplicated from popup.js to avoid needing to fetch config from the background or popup extension JS
+const getMatchingPatches = async (url) => {
+	// We need to encode to escape all the special URI characters
+	let patchRequestPath = `${cfg.patchHost}/patches-for/${encodeURIComponent(url)}`
+
+	let response = await fetch(patchRequestPath, {
+		mode: 'cors'
+	})
+	if (response.ok) {
+		let patchArr = await response.json()
+		for (let patch of patchArr){
+			if (!patch.options){
+				console.error('Matching patch had no options; filling with defaults', patch)
+				patch.options = {}
+			}
+			Object.assign(patch.options, {
+				on: true,
+				whenToRun: 'dom'
+			})
+		}
+		return patchArr
+	} else {
+		throw response
+	}
+}
 
 let last = arr => arr.reverse()[0]
 let fileExtension = path => last(path.split('.'))
 
-// We need to encode to escape all the special URI characters
-let patchRequestPath = `${patchHost}/patches-for/${encodeURIComponent(location.href)}`
-
 let patches
 try {
-	let response = await fetch(patchRequestPath)
-	patches = await response.json()
+	patches = await getMatchingPatches(location.href)
 } catch(err){
-	console.error(`Couldn't fetch patches from the Mane app serving at ${patchHost}; did you forget to start it?`, err)
+	console.error(`Couldn't fetch patches from the Mane app serving at ${cfg.patchHost}; did you forget to start it?`, err)
 	patches = [] // Act as if we simply got an empty response
 }
 
 for (let patch of patches){
-	if (!patch.options){
-		// Use defaults if missing
-		patch.options = {
-			on: true,
-			waitForDomContentLoaded: true
-		}
-	}
 	if (!patch.options.on){
 		continue // Don't inject disabled patches
 	}
 	for (let asset of patch.assets){
-
 		/*
 			If we wanted to insert the script as a `type="module"` _inline_ script (and wrap the body with, eg, a DOMContentLoaded listener), we could get the body text directly here.
 
-			let fileRequest = await fetch(`${patchHost}/${asset.fileUrl}`)
+			let fileRequest = await fetch(`${cfg.patchHost}/${asset.fileUrl}`)
 			let assetBody = await fileRequest.text()
 			let invokeEl = document.createElement('script')
-			if (patch.options.waitForDomContentLoaded){
+			if (patch.options.whenToRun){
 				assetBody = `;document.addEventListener('DOMContentLoaded', function onDomContentLoaded(){\n${assetBody}\n});`
 			}
 			invokeEl.innerText = assetBody
@@ -47,7 +72,7 @@ for (let patch of patches){
 		*/
 
 		let extension = fileExtension(asset.fileUrl)
-		let fullAssetPath = `${patchHost}/${asset.fileUrl}`
+		let fullAssetPath = `${cfg.patchHost}/${asset.fileUrl}`
 
 		let invokeEl // The actual dependency invocation
 		if (extension === 'js'){
@@ -67,16 +92,26 @@ for (let patch of patches){
 
 		const inject = () => {
 			document.head.appendChild(invokeEl)
-			if (logInjections) console.info(`Mane: injected ${asset.fileUrl}`)
+			if (cfg.logInjections) console.info(`Mane: injected ${asset.fileUrl}`)
 		}
 
-		if (patch.options.waitForDomContentLoaded === true || document.readyState === 'complete'){
+		if (patch.options.whenToRun === 'immediate'){
 			inject()
-		} else if (patch.options.waitForDomContentLoaded === 'full'){
+		} else if (patch.options.whenToRun === 'dom'){
 			// Wait for the page INCLUDING all dependent resources (styles, images etc) to be completely loaded
-			document.addEventListener('load', inject)
+			if (document.readyState === 'interactive' || document.readyState === 'complete'){
+				inject()
+			} else {
+				document.addEventListener('DOMContentLoaded', inject)
+			}
+		} else if (patch.options.whenToRun === 'everything'){
+			if (document.readyState === 'complete'){
+				inject()
+			} else {
+				document.addEventListener('load', inject)
+			}
 		} else {
-			document.addEventListener('DOMContentLoaded', inject)
+			throw Error(`Missing 'whenToRun' options for patch ${patch.id}`)
 		}
 	}
 }
