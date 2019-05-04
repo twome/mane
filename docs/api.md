@@ -1,8 +1,10 @@
-# Methods
+# Default module export API
 
-## makeServer([Object cfg])
+## Methods
 
-### cfg
+### makeServer([Object cfg])
+
+#### cfg
 
 See [Configuration](#configuration)
 
@@ -12,14 +14,14 @@ Returns: a Node.js http.Server instance
 
 
 
-## findMatchingPatchesForUrl
+### findMatchingPatchesForUrl
 
 Returns: a Map of patches as [patch.id, patch]
 
 
 
 
-# Configuration
+## Configuration
 
 {
 

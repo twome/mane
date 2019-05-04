@@ -5,7 +5,7 @@
 	"version": "0.1",
 
 	// Optional
-	"description": "Inserts your homemade JS & CSS patches into any pages you want.",
+	"description": "\"Domain patcher\". Inserts your homemade JS & CSS patches into any pages you want.",
 
 	"icons": {
 		"16": "./images/icon/mane_16.png"

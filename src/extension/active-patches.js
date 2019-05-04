@@ -43,7 +43,7 @@ class ActivePatches {
 		let assetEls = this.el.querySelectorAll('.ActivePatches_asset')
 		assetEls.forEach(el => {
 			el.addEventListener('click', (event) => {
-				// TODO: Still allow default open-in-new-tab functionality
+				// TODO: Still allow default open-in-new-tab functionality - with right-click or new-tab-click?
 				event.preventDefault()
 
 				// Send a message to the native app / server asking to open this file locally using the OS' default application (for quickly opening your code editor)

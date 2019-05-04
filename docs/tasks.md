@@ -1,16 +1,16 @@
 # tasks / bugs
 
 BUG FEAT DEBT
+ 
+- BUG 1: new patch tries to write to the whole dir!! (fixed?)
 
-- BUG 1: new patch tries to write to the whole dir!!
-
-- BUG 1: forewarn if no connection to server (incl FEAT 3: greyed icon)
+- FEAT 1: forewarn if no connection to server (incl FEAT 3: greyed icon)
 
 - BUG 1: cache keeps showing patch unless ALL assets are deleted
 
-- FEAT 1: open patches dir
+- FEAT 1: open patches dir from ext
 
-- FEAT 1: specify the active matcher
+- FEAT 1: specify the active matcher in server res
 
 - BUG 1: changing cache.patches at all fucks up because getAllPatches doesn't check for diffs before using caches
 
@@ -18,7 +18,7 @@ BUG FEAT DEBT
 
 - FEAT 1: maybe use BrowserFS to keep track of (and store) asset files in extension? https://github.com/jvilk/BrowserFS
 
-- FEAT 1: long-term storage of patches in browser 
+- FEAT 1: long-term storage of patches in browser to save FS reads and then you'd only need to run the native to refresh them
 
 
 
@@ -34,8 +34,8 @@ BUG FEAT DEBT
 
 - FEAT 2: allow colons in matchers
 	- must separate the IDs and asset filenames?
-	- replace : with _ in filenames
-	- indicator -renamed---
+	- replace `:` with `_` in filenames
+	- indicator `-renamed---`
 	- use special comment to write matchlist in file
 
 - DEBT 2: implement assets properly
@@ -107,4 +107,4 @@ We can't easily do any permissions restrictions or granularity (we could try and
 	- automatically use https://github.com/isomorphic-git/isomorphic-git for fetching if remote url is a repo, rather than a patch file
 
 
-## distant
+## distant roadmap

@@ -15,5 +15,5 @@ server.listen(port, (err)=>{
 		throw err
 	}
 	// Server ready function
-	console.info(`Running Mane server at :${port}`)
+	console.info(`Running Mane server from CLI at :${port}`)
 })

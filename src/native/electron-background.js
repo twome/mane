@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const { app, Menu, MenuItem, Tray, BrowserWindow, nativeImage } = require('electron')
+const { app, Menu, MenuItem, Tray, nativeImage } = require('electron')
 const path = require('path')
 
 import { makeServer, openStorageDir } from '../../bin/programmatic.js'
@@ -81,6 +81,9 @@ let createTray = async () => {
 		// TODO
 		/*{ type: 'separator' },
 		{ label: 'Make Mane start when macOS boots…', id: 'startOnBoot' },*/
+		// TODO
+		// { label: 'Install browser extension for > (submenu)…', id: 'startOnBoot' },
+			// download extension .ctx file
 		{ type: 'separator' },
 		{
 			label: 'Quit',
@@ -208,5 +211,7 @@ server.listen(port, (err)=>{
 		throw err
 	}
 	// Server ready function
-	console.info(`Running Mane server at :${port}`)
+	console.info(`Running Mane server from native menubar at :${port}`)
 })
+
+console.info('Starting the Mane Electron app...')

@@ -18,6 +18,10 @@ Whether Mane shows itself in the menubar/tray, or is completely hidden and runs 
 
 # Per-patch options (can be overriden by each patch)
 
+## on ~ Boolean
+
+AKA 'enabled'. Whether to ever inject this into matching pages.
+
 ## whenToRun ~ String|Number
 Default `dom`
 
