@@ -9,10 +9,9 @@
   "author": "Tom Kenny <tom@twome.name>",
   "license": "MIT",
   "scripts": {
-    "native": "electron --inspect-rbk src/native",
-    "monserver": "nodemon -r esm bin/cli.js",
+    "native": "electron src/native",
     "test": "node -r esm test.js",
-    "montest": "nodemon -r esm --watch test/ --ignore test/testing-sandbox test.js",
+    "testdev": "nodemon -r esm --watch test/ --ignore test/testing-sandbox test.js",
     "build": "node -r esm build.js",
     "prod": "NODE_ENV=production node -r esm build.js"
   },
@@ -20,10 +19,10 @@
     "axios": "^0.18.0",
     "chai": "^4.2.0",
     "eslint": "^5.16.0",
-    "mocha": "^6.0.2",
-    "trash": "^5.2.0"
+    "mocha": "^6.0.2"
   },
   "dependencies": {
+    "trash": "^5.2.0",
     "applescript": "^1.0.0",
     "body-parser": "^1.18.3",
     "date-fns": "^1.30.1",

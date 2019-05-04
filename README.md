@@ -10,15 +10,17 @@ A Node + WebExtension app that automatically inserts your custom JavaScript and 
 
 This is similar in approach to [GreaseMonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)/[TamperMonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo), and '[User Javascript & CSS](https://chrome.google.com/webstore/detail/user-javascript-and-css/nbhcbdghjpllgmfilhnhkllmkecfmpld)' on Chrome, but with an emphasis on editing and storing the patches in whatever way suits you, instead of in a custom editor and locked into a single browser extension's database.
 
-## Installation
+## Installation & usage
 
-#### Server
+#### Server (to read and write patches as files)
 
-Clone this repo, then, from the command line, `cd` into it, run `yarn install`, and run `node -r esm bin/mane.js` to start the Node server.
+**CLI**: Clone this repo, then, from the command line, `cd` into it, run `yarn install`, and run `node -r esm bin/mane.js` to start the Node server.
 
-#### Browser extension
+**macOS Electron app**: Run `yarn native` to launch the GUI app. It will briefly appear in the Dock, then move to the menubar/tray.
 
-Turn on 'developer mode' in your browser's extension manager, then load this repo's `src/extension/` folder as an unpacked extension.
+#### Browser extension (to inject patches into webpages) 
+
+Turn on 'developer mode' in your browser's extension manager, then load this repo's `src/extension/` folder as an "unpacked extension".
 
 ## Usage
 
