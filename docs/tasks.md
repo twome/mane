@@ -1,14 +1,15 @@
 # tasks / bugs
 
-BUG FEAT DEBT
- 
-- BUG 1: new patch tries to write to the whole dir!! (fixed?)
+Key: BUG, FEAT (new feature), or DEBT (technical debt)
+
+- BUG 1: ext gets empty response from server
+- BUG 1: ext ActivePatches fails to render at all with a bad response
 
 - FEAT 1: forewarn if no connection to server (incl FEAT 3: greyed icon)
 
 - BUG 1: cache keeps showing patch unless ALL assets are deleted
 
-- FEAT 1: open patches dir from ext
+- FEAT 3: open patches dir from ext
 
 - FEAT 1: specify the active matcher in server res
 
@@ -19,6 +20,8 @@ BUG FEAT DEBT
 - FEAT 1: maybe use BrowserFS to keep track of (and store) asset files in extension? https://github.com/jvilk/BrowserFS
 
 - FEAT 1: long-term storage of patches in browser to save FS reads and then you'd only need to run the native to refresh them
+
+- BUG 1: new patch tries to write to the whole dir!! (fixed?)
 
 
 
@@ -105,6 +108,5 @@ We can't easily do any permissions restrictions or granularity (we could try and
 			- total size (eg from concatenation or transpilation)
 		- concatenation & minification will be performed by Mane anyway, and users will only be downloading one copy each anyway, so both user load times and patchmaker bandwidth concerns are minimal.
 	- automatically use https://github.com/isomorphic-git/isomorphic-git for fetching if remote url is a repo, rather than a patch file
-
 
 ## distant roadmap

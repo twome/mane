@@ -1,6 +1,8 @@
 import { getActiveTabUrl, getMatchingPatches, fileExtension } from './util.js'
 import Growl from './growl.js'
 
+if (chrome.runtime) browser = chrome
+
 let appConfig
 class ActivePatches {
 	constructor(el, {
@@ -19,6 +21,7 @@ class ActivePatches {
 		this.updateVm().then(() => {
 			this.render()
 		})
+		this.render()
 	}
 
 	async updateVm(){
@@ -35,12 +38,12 @@ class ActivePatches {
 			}, new Map())
 		} catch (err) {
 			console.error(`Failed getting matching patches`, err)
-			// this.patches = new Map()
+			this.patches = new Map()
 		}
 	}
 
 	registerHandlers(){
-		let assetEls = this.el.querySelectorAll('.ActivePatches_asset')
+		let assetEls = [...this.el.querySelectorAll('.ActivePatches_asset')]
 		assetEls.forEach(el => {
 			el.addEventListener('click', (event) => {
 				// TODO: Still allow default open-in-new-tab functionality - with right-click or new-tab-click?
@@ -57,14 +60,14 @@ class ActivePatches {
 			})
 		})
 
-		let patchEls = this.el.querySelectorAll('.ActivePatches_patch')
+		let patchEls = [...this.el.querySelectorAll('.ActivePatches_patch')]
 		patchEls.forEach(el => {
 			let id = el.dataset.patchId
 			let patch = this.patches.get(id)
 			let toggleEl = el.querySelector('.ActivePatches_toggleEnabled')
 
 			let unsyncedState = null
-			toggleEl.addEventListener('click', (event) => {
+			let toggleHandler = event => {
 				unsyncedState = unsyncedState !== null ? unsyncedState : patch.options.on // Remember until saved to server
 				patch.options.on = !patch.options.on
 				this.patches.set(id, patch)
@@ -106,7 +109,8 @@ class ActivePatches {
 				}).finally(() => {
 					this.render()
 				})
-			})
+			}
+			toggleEl.addEventListener('click', toggleHandler)
 		})
 	}
 
@@ -114,7 +118,10 @@ class ActivePatches {
 		// Update view
 		let html = this.toHTML()
 		this.el.innerHTML = html
+		// BROKEN
+		// browser.browserAction.setBadgeText({text: new String(this.patches.length)}, () => {
 
+		// })
 		this.registerHandlers()
 	}
 

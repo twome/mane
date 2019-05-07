@@ -5,7 +5,12 @@
 	"version": "0.1",
 
 	// Optional
+	"short_name": "Mane",
 	"description": "\"Domain patcher\". Inserts your homemade JS & CSS patches into any pages you want.",
+	"developer": {
+	  "name": "Tom Kenny",
+	  "url": "https://twome.name"
+	},
 
 	"icons": {
 		"16": "./images/icon/mane_16.png"
@@ -14,7 +19,10 @@
 	"content_scripts": [
 		{
 			"matches": ["*://*/*"], // It's massively more convenient to grant access to all sites for the patch injector, so that the user doesn't need to manually whitelist sites by default. We're keen to find a way to let users control this whitelist/blacklist without having to first grant full permission.
-			"js": ["injector.js"]
+			"js": [
+				"vendor/browser-polyfill.js",
+				"injector.js"
+			]
 		}
 	],
 
@@ -24,7 +32,14 @@
 		"default_popup": "popup.html"
 	},
 
+	"background": {
+		"scripts": [
+			"vendor/browser-polyfill.js",
+			"background.js"
+		]
+	},
 	"permissions": [
+		"management", // TEMP DEV ONLY! - extension management, so we can programmatically reload the extension during development
 		"activeTab" // So the popup / main extension "button" can tell which tab is currently active, and thus: use the current tab's URL to check which patches should be active, and autofill the current tab's domain into the "New patch" matcher list)
 	],
 

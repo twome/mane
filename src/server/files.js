@@ -63,7 +63,7 @@ export const getPatchOptions = async ({cfg, cache}) => {
 	return JSON.parse(fileBody)
 }
 
-export const setPatchOptions = async (allOptions, {cfg, cache}) => {
+export const setPatchOptions = async (allOptions, {cfg}) => {
 	await writeFile(cfg.optionsJsonPath, JSON.stringify(allOptions, undefined, 2))
 }
 
@@ -135,8 +135,13 @@ export let savePatchToFs = async (patch, {
 	cfg, cache,
 	canOverwriteExisting = false
 }) => {
-	await makeDir(cfg.storageDir, { recursive: true })
-
+	try {
+		await makeDir(cfg.storageDir, { recursive: true })
+	} catch (nodeFsError){
+		// We're fine if the dir already exists, otherwise rethrow
+		console.error('Non-EEXIST error when trying to `mkdir -p` the storageDir')
+		if (!nodeFsError.code.match(/EEXIST/i)) throw nodeFsError
+	}
 	let writes = patch.assets.map(async asset => {
 		// TODO why this undef
 		console.info('Writing asset:', asset)
@@ -153,11 +158,11 @@ export let savePatchToFs = async (patch, {
 				if (extantBody.length > 0){
 					throw Error('Cannot overwrite a non-empty file whilst `canOverwriteExisting` is true')
 				}
-			} catch(err){
-				if (err.name.match(/ENOENT/i) || err.message.match(/ENOENT/i)){
+			} catch(nodeFsError){
+				if (nodeFsError.code.match(/ENOENT/i)){
 					// File doesn't exist; we're good to create a new one!
 				} else if (extantBody.length){
-					throw err
+					throw nodeFsError
 				}
 				// If there's no body, then there's nothing to lose by writing over it
 			}

@@ -36,8 +36,6 @@ if (!app.weApiAvailable){
 
 for (let type of [ActivePatches, NewPatch]){
 	for (let el of [...document.querySelectorAll(type.selector)]){
-		app.instances.add(new type(el), {
-
-		})
+		app.instances.add(new type(el))
 	}
 }

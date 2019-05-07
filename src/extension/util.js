@@ -139,7 +139,6 @@ export const getMatchingPatches = async (url, {app}) => {
 	})
 	if (response.ok) {
 		let patchArr = await response.json()
-		console.debug({patchArr})
 		for (let patch of patchArr){
 			if (!patch.options){
 				console.error('Matching patch had no options; filling with defaults', patch)

@@ -3,7 +3,7 @@ import Growl from './growl.js'
 
 let appConfig
 class NewPatch {
-	constructor(el, { 
+	constructor(el, {
 		newFileToggles = [
 			{
 				name: 'css',
@@ -36,7 +36,7 @@ class NewPatch {
 		})
 	}
 
-	/* 
+	/*
 		HACK: outside of main render fn so assetTypesHandler can call it without a full render
 		SOLVE: full render shouldn't bother assetTypesHandler
 	*/
@@ -52,7 +52,7 @@ class NewPatch {
 
 	async updateVm(){
 		this.matchListStr = new URL(await getActiveTabUrl(NewPatch.app)).hostname
-		
+
 		this.validInput = this.cssChecked || this.jsChecked
 	}
 
@@ -71,7 +71,7 @@ class NewPatch {
 				createFilesEl.classList.add('btn-isFailed')
 				this.createBtnTimer = setTimeout(()=>{
 					createFilesEl.classList.remove('btn-isFailed')
-				}, this.createBtnFlashFailMs)	
+				}, this.createBtnFlashFailMs)
 			}
 			const resetFlashFail = () => {
 				createFilesEl.classList.remove('btn-isFailed') // Reset for this new attempt
@@ -82,12 +82,12 @@ class NewPatch {
 			if (!this.validInput) return false
 
 			let assetsToCreate = []
-			if (this.cssChecked) assetsToCreate.push({ 
-				assetType: 'css', 
+			if (this.cssChecked) assetsToCreate.push({
+				assetType: 'css',
 				fileUrl: this.matchListStr + '.css'
 			})
-			if (this.jsChecked) assetsToCreate.push({ 
-				assetType: 'js', 
+			if (this.jsChecked) assetsToCreate.push({
+				assetType: 'js',
 				fileUrl: this.matchListStr + '.js'
 			})
 
@@ -98,6 +98,7 @@ class NewPatch {
 			}
 
 			createFilesEl.classList.add('btn-disabled')
+
 			fetch(`${appConfig.patchHost}/${appConfig.routes.createPatchFile}`, {
 				method: 'POST',
 				mode: 'cors',
@@ -107,7 +108,7 @@ class NewPatch {
 		        body: JSON.stringify(patchCreationObject)
 			}).then(res => {
 				this.updateVm().then(() => {
-					this.render()	
+					this.render()
 				})
 				if (this.validInput) createFilesEl.classList.remove('btn-disabled')
 				if (res.ok){
@@ -138,12 +139,12 @@ class NewPatch {
 		let assetTypesHandler = () => {
 			this.cssChecked = this.el.querySelector('.NewPatch_patchFile #css').checked
 			this.jsChecked = this.el.querySelector('.NewPatch_patchFile #js').checked
-			
+
 			this.updateVm().then(() => {
-				this.renderCreateButton()	
+				this.renderCreateButton()
 			})
 		}
-		
+
 		createFilesEl.addEventListener('click', createFilesHandler)
 		newMatchListEl.addEventListener('change', newMatchListHandler)
 		let assetTypes = [cssAssetEl, jsAssetEl]
@@ -157,7 +158,7 @@ class NewPatch {
 
 		let newMatchListEl = this.el.querySelector('.NewPatch_matchList')
 		newMatchListEl.value = this.matchListStr
-		
+
 		let cssAssetEl = this.el.querySelector('.NewPatch_patchFiles #css')
 		let jsAssetEl = this.el.querySelector('.NewPatch_patchFiles #js')
 		let createFilesEl = this.el.querySelector('.NewPatch_createBtn')
@@ -185,7 +186,7 @@ class NewPatch {
 
 		let fullTemplate = `
 			<header class="NewPatch_header spaceyHeader spaceyHeader-onLight">New patch for URLs:</header>
-			<input type="text" class="NewPatch_matchList" 
+			<input type="text" class="NewPatch_matchList"
 				title="Comma-separated list of URL matchers (regular expressions) to trigger this patch's insertion into webpages"
 				placeholder="*.bandcamp.com,sa.org.au"
 			>
