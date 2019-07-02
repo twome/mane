@@ -120,6 +120,10 @@ export const makeServer = (cfg = config) => {
 		next()
 	})
 
+	server.get(`/${cfg.routes.testConnection}`, (req, res) => {
+		res.sendStatus(200)
+	})
+
 	/*
 		TODO
 		SECURITY: foreign domain beside that which the extension popup is running from MUST NOT be able to know any contents of the Mane user's FS beside the specific matching assets. Ideally, the foreign domains don't even know that, and we insert the asset as a content script / content style, not in-page.

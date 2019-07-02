@@ -438,6 +438,9 @@ section {
 	background-color: red;
 	color: hsla(69, 100%, 96%, 1);
 }
+.Growl-nonDismissable {
+	cursor: initial;
+}
 
 
 

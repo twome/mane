@@ -5,6 +5,7 @@ export let getConfig = () => {
 	let cfg = {
 		port: 1917,
 		routes: {
+			testConnection: 'test-connection',
 			patchesFor: 'patches-for',
 			createPatchFile: 'create-patch', // TODO: just POST on routes.patches/:id
 			openFileNative: 'open-file',

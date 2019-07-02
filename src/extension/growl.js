@@ -9,6 +9,7 @@ export default class Growl {
 		/*Boolean*/showImmediately = true,
 		/*HTMLElement*/attachPoint = document.body,
 		/*Number*/lifespanMs = 5000, // Set to 0 for infinite
+		/*Boolean*/dismissable = true
 	}){
 		instanceList.add(this)
 		Object.assign(this, { message, type, attachPoint, lifespanMs })
@@ -85,7 +86,7 @@ export default class Growl {
 			this.shown = !this.shown
 			this.render()
 		}
-		this.el.addEventListener('click', clickHandler)
+		if (this.dismissable) this.el.addEventListener('click', clickHandler)
 
 		this.handlersRegistered = true
 	}
@@ -94,6 +95,7 @@ export default class Growl {
 		if (!this.el){
 			this.el = document.createElement('div')
 			this.el.classList.add('Growl')
+			if (!this.dismissable) this.el.classList.add('Growl-nonDismissable')
 			this.el.classList.add(this.typeClasses.get(this.type))
 
 			let message = document.createElement('span')
