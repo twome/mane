@@ -8,7 +8,7 @@ export default class Growl {
 		/*Enum - Growl.types*/type = Growl.types.Error,
 		/*Boolean*/showImmediately = true,
 		/*HTMLElement*/attachPoint = document.body,
-		/*Number*/lifespanMs = 5000 // Set to 0 for infinite
+		/*Number*/lifespanMs = 5000, // Set to 0 for infinite
 	}){
 		instanceList.add(this)
 		Object.assign(this, { message, type, attachPoint, lifespanMs })
@@ -33,7 +33,7 @@ export default class Growl {
 		this.naturalHeight = null
 
 		this.render().then(() => {
-			if (!!showImmediately){
+			if (showImmediately){
 				this.shown = true
 				this.render()
 			}

@@ -195,9 +195,9 @@ app.on('activate', () => {
 */
 // Don't let views be used to navigate URLs like a browser - we don't need it and don't want to risk remote JS being able to execute with any OS privileges whatsoever.
 app.on('web-contents-created', (event, contents) => {
-  contents.on('will-navigate', (event, navigationUrl) => {
-      event.preventDefault()
-  })
+	contents.on('will-navigate', (event, navigationUrl) => {
+		event.preventDefault()
+	})
 })
 
 

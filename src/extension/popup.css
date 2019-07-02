@@ -1,5 +1,5 @@
-/* 
-	## Color palette 
+/*
+	## Color palette
 
 	dark - hsla(29, 100%, 6%, 1)
 	light - hsla(69, 100%, 96%, 1)
@@ -16,7 +16,7 @@
 
 
 
-/* 
+/*
 	Elements
 */
 * {
@@ -42,7 +42,7 @@ input {
 	font-family: 'Inter UI', 'Helvetica Neue', 'Helvetica', 'Source Sans Pro', 'Arial', sans-serif;
 }
 
-/* 
+/*
 	TEMP DEV-ONLY
  */
 @media screen and (min-width: 700px) {
@@ -108,7 +108,7 @@ section {
 	padding-bottom: 0.62em;
 }
 
-/* 
+/*
 	Objects
 */
 .btn {
@@ -144,7 +144,7 @@ section {
 }
 @keyframes flashRed {
 	from {
-		background-color: red;	
+		background-color: red;
 	}
 
 	/* Back to previous background */
@@ -227,7 +227,7 @@ section {
 	border-color: hsla(97, 100%, 75%, 1);
 }
 
-/* 
+/*
 	Components
 */
 .Mane {
@@ -296,7 +296,7 @@ section {
 
 	position: relative;
 	overflow-x: hidden;
-	text-overflow: ellipsis; 
+	text-overflow: ellipsis;
 	white-space: nowrap;
 	scrollbar-width: none; /* This list is only one line high; a visible scrollbar will make it unreadable. */
 	display: inline-flex; /* Ignore the source-code inline spaces from the inner content. */
@@ -338,7 +338,7 @@ section {
 	text-align: center;
 	font-style: italic;
 	color: hsl(33, 78%, 60%);
-	position: relative; 
+	position: relative;
 	right: 2px; /* Adjustment for italics */
 
 	justify-content: center;
@@ -411,11 +411,11 @@ section {
 	color: hsla(29, 100%, 6%, 1);
 	border-top: 1px solid white;
 	cursor: pointer;
-	
+
 	opacity: 1;
 	max-height: 8em;
 	transition: max-height 200ms , opacity 200ms;
-	transition-timing-function: linear; 
+	transition-timing-function: linear;
 }
 .Growl span {
 	padding: 0.62em;
@@ -441,7 +441,7 @@ section {
 
 
 
-/* 
+/*
 	Utility classes
 */
 
