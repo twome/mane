@@ -2,14 +2,9 @@
 
 Key: BUG, FEAT (new feature), or DEBT (technical debt)
 
-- BUG 1: ext gets empty response from server
-- BUG 1: ext ActivePatches fails to render at all with a bad response
-
-- FEAT 1: forewarn if no connection to server (incl FEAT 3: greyed icon)
+- BUG 1: NewPatch updateVm incorrectly setting 'create' btn validity
 
 - BUG 1: cache keeps showing patch unless ALL assets are deleted
-
-- FEAT 3: open patches dir from ext
 
 - FEAT 1: specify the active matcher in server res
 
@@ -17,13 +12,12 @@ Key: BUG, FEAT (new feature), or DEBT (technical debt)
 
 - FEAT 1: proper icon
 
-- FEAT 1: maybe use BrowserFS to keep track of (and store) asset files in extension? https://github.com/jvilk/BrowserFS
-
-- FEAT 1: long-term storage of patches in browser to save FS reads and then you'd only need to run the native to refresh them
+- FEAT 2: long-term storage of patches in browser to save FS reads and then you'd only need to run the native to refresh them
 
 - BUG 1: new patch tries to write to the whole dir!! (fixed?)
 
 
+- FEAT 2: maybe use BrowserFS to keep track of (and store) asset files in extension? https://github.com/jvilk/BrowserFS
 
 - FEAT 2: on server start, recurse all dirs with lstat, find any news or last-modifieds later than the last cache date. add them to the invalids list.
 
@@ -62,6 +56,8 @@ Key: BUG, FEAT (new feature), or DEBT (technical debt)
 	- con: security hazard from patches having greater power?
 
 
+
+- FEAT 3: open patches dir from ext
 
 - FEAT 3: expose existing mono-json imports, and create exports for all formats. UJS&CSS & TamperMonkey
 

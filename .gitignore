@@ -12,3 +12,6 @@ ignored/
 
 # Filesystem testing
 test/testing-sandbox/
+
+# Privacy / machine-specific
+.env
