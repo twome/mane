@@ -9,7 +9,7 @@
   "author": "Tom Kenny <tom@twome.name>",
   "license": "MIT",
   "scripts": {
-    "native": "electron src/native",
+    "nativedev": "nodemon -r esm --watch src/ launch-electron.js",
     "test": "node -r esm test.js",
     "testdev": "nodemon -r esm --watch test/ --ignore test/testing-sandbox test.js",
     "build": "node -r esm build.js",
