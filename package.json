@@ -2,18 +2,18 @@
   "name": "mane",
   "version": "0.2.0",
   "description": "A Node + WebExtension app that automatically inserts your custom JavaScript and CSS files, stored on your hard drive, into web pages to customise them.",
-  "main": "bin/programmatic.js",
-  "programmatic-module": "bin/programmatic.js",
+  "main": "lib/programmatic.js",
+  "programmatic-module": "lib/programmatic.js",
   "bin": "bin/cli.js",
   "cli-executable": "bin/cli.js",
   "author": "Tom Kenny <tom@twome.name>",
   "license": "MIT",
   "scripts": {
-    "nativedev": "nodemon -r esm --watch src/ launch-electron.js",
+    "develop-native": "nodemon -r esm --watch src/ launch-electron.js",
     "test": "node -r esm test.js",
-    "testdev": "nodemon -r esm --watch test/ --ignore test/testing-sandbox test.js",
+    "develop-tests": "nodemon -r esm --watch test/ --ignore test/testing-sandbox test.js",
     "build": "node -r esm build.js",
-    "prod": "NODE_ENV=production node -r esm build.js"
+    "build-production": "NODE_ENV=production node -r esm build.js"
   },
   "devDependencies": {
     "axios": "^0.18.0",

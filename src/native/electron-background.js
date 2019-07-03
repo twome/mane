@@ -2,7 +2,7 @@
 const { app, Menu, MenuItem, Tray, nativeImage } = require('electron')
 const path = require('path')
 
-import { makeServer, openStorageDir } from '../../bin/programmatic.js'
+import { makeServer, openStorageDir } from '../../lib/programmatic.js'
 import * as errors from './errors.js'
 
 // Config
