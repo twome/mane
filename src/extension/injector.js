@@ -7,7 +7,7 @@
 // This is hard-coded & duplicated from popup.js to avoid needing to fetch config from the background or popup extension JS
 let cfg = {
 	logInjections: true,
-	maneServerHostmame: 'http://localhost:1917',
+	maneServerHostname: 'http://localhost',
 	maneServerPort: 1917,
 	routes: {
 		createPatchFile: 'create-patch',
