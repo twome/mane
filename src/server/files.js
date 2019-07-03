@@ -146,8 +146,10 @@ export let savePatchToFs = async (patch, {
 		await makeDir(cfg.storageDir, { recursive: true })
 	} catch (nodeFsError){
 		// We're fine if the dir already exists, otherwise rethrow
-		console.error('Non-EEXIST error when trying to `mkdir -p` the storageDir')
-		if (!nodeFsError.code.match(/EEXIST/i)) throw nodeFsError
+		if (!nodeFsError.code.match(/EEXIST/i)){
+			console.error('Non-EEXIST error when trying to `mkdir -p` the storageDir', nodeFsError)
+			throw nodeFsError
+		}
 	}
 	let writes = patch.assets.map(async asset => {
 		// TODO why this undef
