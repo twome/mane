@@ -99,7 +99,7 @@ export default class Growl {
 			this.el.classList.add(this.typeClasses.get(this.type))
 
 			let message = document.createElement('span')
-			message.innerText = this.message
+			message.innerHTML = this.message
 			this.el.appendChild(message)
 		}
 		if (!this.attachPoint.contains(this.el)){

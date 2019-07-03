@@ -8,7 +8,8 @@ console.info('Mane popup opening')
 
 // Options
 let config = {
-	patchHost: 'http://localhost:1917',
+	maneServerHostname: 'http://localhost',
+	maneServerPort: 1917,
 	routes: {
 		testConnection: 'test-connection',
 		createPatchFile: 'create-patch',
@@ -22,31 +23,34 @@ let config = {
 	assetTypes: {
 		'js': 1,
 		'css': 2
-	}
+	},
+	appHostElSelector: '[data-app="mane"]'
 }
+config.maneServerHost = `${config.maneServerHostname}:${config.maneServerPort}`
 
 // App-wide 'global' state
 let app = {
 	serverAvailable: null,
 	cfg: config,
-	el: document.querySelector('[data-app="mane"]'),
+	el: document.querySelector(config.appHostElSelector),
 	instances: new Set(),
 	componentTypes: [NewPatch, ActivePatches, Growl],
-	weApiAvailable: typeof browser !== 'undefined', // WebExtensions 'browser'/'chrome' API object present in global object
-	chromeWeApiAvailable: typeof chrome !== 'undefined' && new Boolean(chrome.tabs), // Account for Chrome's non-spec WE API implementation
+	weApiAvailable: typeof browser !== 'undefined', // WebExtensions (WE) 'browser'/'chrome' API object present in global object
+	chromeWeApiAvailable: typeof chrome !== 'undefined' && Boolean(chrome.tabs), // Account for Chrome's non-spec WE API implementation
+
+	// Components (suffix -C)
 	connectionIndicatorC: null, /*Growl*/
 	activePatchesC: null, /*ActivePatches*/
 	newPatchC: null, /*NewPatch*/
 
-	render(cascadeToChildComponents){
+	render(willCascadeToChildComponents){
 		browser.browserAction.setIcon({
 			path: {
 				16: app.serverAvailable ? './images/icon/mane_16.png' : './images/icon/mane_16_grey.png'
 			}
 		})
 
-
-		if (cascadeToChildComponents) for (let i of app.instances){ i.render() }
+		if (willCascadeToChildComponents) for (let i of app.instances){ i.render() }
 
 		if (app.serverAvailable){
 			if (app.connectionIndicatorC){
@@ -54,8 +58,9 @@ let app = {
 				app.connectionIndicatorC = null
 			}
 		} else {
+			let hostSansProtocol = config.maneServerHost.replace(/https?:\/\//, '')
 			app.connectionIndicatorC = app.connectionIndicatorC || new Growl({
-				message: `Can't connect to Mane server (the menubar app)`,
+				message: `Can't connect to Mane server (the menubar app) at <code>${hostSansProtocol}</code>`,
 				type: Growl.types.Error,
 				showImmediately: true,
 				attachPoint: app.el.querySelector('.ConnectionIndicator'),
@@ -65,9 +70,9 @@ let app = {
 		}
 	}
 }
-// Add this to the constructor for each component to share it without boilerplate
-app.componentTypes.forEach(type => {
-	type.app = app
+// Add this to the constructor for each component to share this global state to them without boilerplate
+app.componentTypes.forEach(typeConstructorFn => {
+	typeConstructorFn.app = app
 })
 
 if (!app.weApiAvailable){
@@ -75,7 +80,7 @@ if (!app.weApiAvailable){
 }
 
 let testConnection = () => {
-	fetch(`${config.patchHost}/${config.routes.testConnection}`, {
+	fetch(`${config.maneServerHostname}:${config.maneServerPort}/${config.routes.testConnection}`, {
 		mode: 'cors'
 	}).then(res => {
 		app.serverAvailable = res.ok

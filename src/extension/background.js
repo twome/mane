@@ -3,7 +3,7 @@
 console.info('Mane background script')
 
 let config = {
-	patchHost: 'http://localhost:1917',
+	maneServerHost: 'http://localhost:1917',
 	routes: {
 		testConnection: 'test-connection',
 		createPatchFile: 'create-patch',
@@ -19,7 +19,7 @@ let state = {
 }
 
 let testConnection = () => {
-	fetch(`${config.patchHost}/${config.routes.testConnection}`, {
+	fetch(`${config.maneServerHost}/${config.routes.testConnection}`, {
 		mode: 'cors'
 	}).then(res => {
 		state.serverAvailable = res.ok
