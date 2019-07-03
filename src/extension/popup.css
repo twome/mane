@@ -394,8 +394,21 @@ section {
 	user-select: none;
 	cursor: pointer;
 }
-.NewPatch_patchFile input[type="checkbox"]::after {
+.NewPatch_patchFileCheckbox::after {
 	top: -0.5em; /* To account for vertical centering */
+}
+.NewPatch_patchFile-disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+.NewPatch_patchFile-disabled .NewPatch_patchFileCheckbox::after,
+.NewPatch_patchFile-disabled .NewPatch_patchFileCheckbox:focus::after,
+.NewPatch_patchFile-disabled .NewPatch_patchFileCheckbox:hover::after,
+.NewPatch_patchFile-disabled .NewPatch_patchFileCheckbox:active::after {
+	border-color: hsla(39, 0%, 50%, 1);
+	text-shadow: none;
+	background-color: hsla(39, 0%, 50%, 1);
+	cursor: not-allowed;
 }
 
 .NewPatch_createBtn {

@@ -9,7 +9,7 @@ const readDir = util.promisify(fs.readdir)
 
 import parseDate from '../../node_modules/date-fns/parse/index.js'
 import last from '../../node_modules/lodash-es/last.js'
-// import isEqual from '../../node_modules/lodash-es/isEqual.js'
+import isEqual from '../../node_modules/lodash-es/isEqual.js'
 
 import { getConfig } from './config.js'
 import { Patch } from './patch.js'
@@ -37,9 +37,10 @@ export const getPatchAssetBodies = async (patch, { cfg }) => {
 }
 
 export const createPatchOptionsFromDir = async ({cfg, cache}) => {
-	let allPatches = await getAllPatches({
+	let allPatches = await getPatchesFromDir({
 		cfg,
-		cache
+		cache,
+		includeOptions: false
 	})
 
 	let optionsFromScratch = [...allPatches.values()].reduce((obj, patch) => {
@@ -47,28 +48,34 @@ export const createPatchOptionsFromDir = async ({cfg, cache}) => {
 		return obj
 	}, {})
 
-	return await setPatchOptions(optionsFromScratch, {cfg, cache})
+	return optionsFromScratch
 }
 
 export const getPatchOptions = async ({cfg, cache}) => {
-	// TODO use cache
+	if (cache.patchOptions) return cache.patchOptions
 
-	let fileBody
+	let optionsObj
 	try {
-		fileBody = await readFile(cfg.optionsJsonPath, 'utf8')
+		optionsObj = await readFile(cfg.optionsJsonPath, 'utf8')
 	} catch (err){
-		await createPatchOptionsFromDir({cfg, cache})
-		fileBody = await readFile(cfg.optionsJsonPath, 'utf8')
+		console.error('Patch options file missing; trying to create a new one by reading the storageDir...')
+		let optionsFromScratch = await createPatchOptionsFromDir({cfg, cache})
+		optionsObj = optionsFromScratch
+		setPatchOptions(optionsFromScratch, {cfg, cache}) // async; runs in background although we'll syncly return the object
 	}
-	return JSON.parse(fileBody)
+	return JSON.parse(optionsObj)
 }
 
-export const setPatchOptions = async (allOptions, {cfg}) => {
+export const setPatchOptions = async (allOptions, {cfg, cache}) => {
+	if (isEqual(cache.patchOptions, allOptions)){
+		return true // No changes needed
+	}
+	cache.patchOptions = allOptions
 	await writeFile(cfg.optionsJsonPath, JSON.stringify(allOptions, undefined, 2))
 }
 
 export const setSinglePatchOptions = async (id, singleOptions, {cfg, cache}) => {
-	let extant = await getPatchOptions({cfg, cache})
+	let extant = cache.patchOptions || await getPatchOptions({cfg, cache})
 	extant[id] = singleOptions
 	await setPatchOptions(extant, {cfg, cache})
 }
@@ -158,11 +165,11 @@ export let savePatchToFs = async (patch, {
 				if (extantBody.length > 0){
 					throw Error('Cannot overwrite a non-empty file whilst `canOverwriteExisting` is true')
 				}
-			} catch(nodeFsError){
-				if (nodeFsError.code.match(/ENOENT/i)){
+			} catch(err){
+				if (err.code && err.code.match(/ENOENT/i)){
 					// File doesn't exist; we're good to create a new one!
 				} else if (extantBody.length){
-					throw nodeFsError
+					throw err
 				}
 				// If there's no body, then there's nothing to lose by writing over it
 			}
@@ -229,7 +236,7 @@ export const getFsCache = async ({
 	return previousFsCacheJson
 }
 
-export const getPatchesFromDir = async ({ cfg, cache }) => {
+export const getPatchesFromDir = async ({ cfg, cache, includeOptions = true }) => {
 	let filenames = await readDir(cfg.storageDir)
 
 	filenames = filenames.filter(name => {
@@ -237,7 +244,7 @@ export const getPatchesFromDir = async ({ cfg, cache }) => {
 		return true
 	})
 
-	let allOptions = await getPatchOptions({cfg, cache})
+	let allOptions = includeOptions ? await getPatchOptions({cfg, cache}) : []
 
 	let fileData = []
 	for (let name of filenames){
@@ -253,6 +260,7 @@ export const getPatchesFromDir = async ({ cfg, cache }) => {
 				matchListStr = name.replace(/\.(css|js)\s*$/, '')
 			}
 			id = name.replace(/\.(css|js)\s*$/, '') // Remove file extension and use the filename as ID
+
 			resolve({
 				name,
 				matchListStr,
@@ -260,12 +268,13 @@ export const getPatchesFromDir = async ({ cfg, cache }) => {
 				options: allOptions[id]
 			})
 		})
+
 		fileData.push(file)
 	}
+	let files = await Promise.all(fileData)
 
 	// TODO: use reduce
 	let patches = new Map()
-	let files = await Promise.all(fileData)
 	files.forEach(file => {
 		file.matchList = file.matchListStr.trim().split(',') // String ID to matchers array
 

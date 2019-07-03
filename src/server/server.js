@@ -24,6 +24,7 @@ const config = getConfig()
 let cache = {
 	valid: false, // Whether we need to restore the cache or not
 	patches: new Map(),
+	patchOptions: null, /* Object */
 	lastFsReadPatches: null, /* DateTime */
 	lastFsWrotePatches: null, /* DateTime */
 	recentUrlsHistory: new Map(), // key: exact URL string, value: Patch[]
