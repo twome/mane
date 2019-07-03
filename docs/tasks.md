@@ -2,6 +2,8 @@
 
 Key: BUG, FEAT (new feature), or DEBT (technical debt)
 
+- BUG 1: enabling/disabling patches in ext says "saved to disk" but on reopening popup, nothings changed
+
 - BUG 1: NewPatch updateVm incorrectly setting 'create' btn validity
 
 - BUG 1: cache keeps showing patch unless ALL assets are deleted
@@ -12,10 +14,11 @@ Key: BUG, FEAT (new feature), or DEBT (technical debt)
 
 - FEAT 1: proper icon
 
-- FEAT 2: long-term storage of patches in browser to save FS reads and then you'd only need to run the native to refresh them
-
 - BUG 1: new patch tries to write to the whole dir!! (fixed?)
 
+
+
+- FEAT 2: long-term storage of patches in browser to save FS reads and then you'd only need to run the native to refresh them
 
 - FEAT 2: maybe use BrowserFS to keep track of (and store) asset files in extension? https://github.com/jvilk/BrowserFS
 

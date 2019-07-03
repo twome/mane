@@ -4,11 +4,9 @@
 
 ##### Status: pre-alpha; not for public use
 
-A Node + WebExtension app that automatically inserts your custom JavaScript and CSS files, stored on your hard drive or a remote Git repository [TODO], into web pages to customise them - fix bugs, improve the visual design, remove ads - whatever you want! 
+A native menubar / system tray app and browser extension which automatically inserts modifications (JavaScript and CSS) into certain websites whenever you visit them. These "patches" are stored in a folder on your hard drive or a remote Git repository (WIP), so you can use patches made by other people and keep them in your cloud files with no fuss or accounts necessary. Hide sticky headers, add keyboard shortcuts to music players, improve hideous colour palettes, or cut out annoyances which adblockers miss because they aren't technically ads – jury-rig any part of the web to your liking!
 
-[TODO] It also allows you to easily share and use public community "patches", so everyone can easily benefit from one person's customisations. 
-
-This is similar in approach to [GreaseMonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)/[TamperMonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo), and '[User Javascript & CSS](https://chrome.google.com/webstore/detail/user-javascript-and-css/nbhcbdghjpllgmfilhnhkllmkecfmpld)' on Chrome, but with an emphasis on editing and storing the patches in whatever way suits you, instead of in a custom editor and locked into a single browser extension's database.
+This is similar in approach to [GreaseMonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)/[TamperMonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo), and '[User Javascript & CSS](https://chrome.google.com/webstore/detail/user-javascript-and-css/nbhcbdghjpllgmfilhnhkllmkecfmpld)' on Chrome, but with an emphasis on a simple & nice user interface, and being able to edit and store patches in whatever way suits you (instead of weird custom editors and databases).
 
 ## Installation & usage
 
