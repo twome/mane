@@ -37,6 +37,8 @@ class NewPatch {
 
 		let createDefaultMatchList = async () => {
 			let currentPage = await getActiveTabUrl(NewPatch.app).catch(() => 'example.com')
+
+			// Here we make a very broad assumption that users are probably most interested in matching any page on this hostname (which includes & limits to the current subdomain, if there is one!)
 			let defaultMatchList = new URL(currentPage).hostname
 			this.matchListStr = defaultMatchList
 			await this.updateVm()
@@ -44,59 +46,41 @@ class NewPatch {
 		}
 		createDefaultMatchList()
 
-		this.updateVm().then(() => {
-			this.render()
-		})
+		this.updateVm()
 
-		// HACK - we need an event to watch for when we've fetched the list of active patches
-		setTimeout(async () => {
+		// TEMP DEV HACK - we need an event to watch for when we've fetched the list of active patches
+		let onActivePatchesFetched = async (msg, data) => {
 			await this.updateVm()
-			this.render()
-		}, 1000)
-	}
-
-	/*
-		HACK: outside of main render fn so assetTypesHandler can call it without a full render
-		SOLVE: full render shouldn't bother assetTypesHandler
-	*/
-	renderCreateButton(){
-		let createFilesEl = this.el.querySelector('.NewPatch_createBtn')
-		if (!this.validInput){
-			createFilesEl.classList.add('btn-disabled')
-			createFilesEl.title = 'Must select at least one type of file to create; CSS or JS'
-		} else {
-			createFilesEl.classList.remove('btn-disabled')
 		}
+		setTimeout(onActivePatchesFetched, 1000)
 	}
 
-	async updateVm(){
-		console.debug('updateVm')
+	async updateVm(dontRender){
 
 		// HACK - fix: communicate/share state between components
 		let matchingPatches = new Map()
 		if (this.fetchMatchingPatches) matchingPatches = this.fetchMatchingPatches() // Parent app may not have injected this fn yet
-		console.debug({matchingPatches})
+		this.jsEnabled = true
+		this.cssEnabled = true
 		for (let patch of matchingPatches.values()){
-			console.debug(patch)
-			console.debug(this.matchListStr, patch.id)
 			if (this.matchListStr.trim() === patch.id){
-				this.jsEnabled = true
-				this.cssEnabled = true
 				for (let asset of patch.assets){
-					console.debug(asset)
 					// We shouldn't make another asset of the same filetype if one already exists for this exact patch ID
 					if (asset.assetType === appConfig.assetTypes.js){
 						this.jsEnabled = false
+						this.jsChecked = false
 					}
 					if (asset.assetType === appConfig.assetTypes.css){
 						this.cssEnabled = false
+						this.cssChecked = false
 					}
 				}
-				if (this.jsEnabled && this.jsChecked || this.cssEnabled && this.cssChecked) this.validInput = true
-			} else {
-				this.validInput = true
 			}
 		}
+		this.validInput = this.jsEnabled && this.jsChecked || this.cssEnabled && this.cssChecked
+
+		if (dontRender) return
+		this.render()
 	}
 
 	registerHandlers(){
@@ -107,6 +91,7 @@ class NewPatch {
 
 		let newMatchListHandler = () => {
 			this.matchListStr = newMatchListEl.value
+			this.updateVm()
 		}
 
 		let createFilesHandler = () => {
@@ -150,9 +135,7 @@ class NewPatch {
 		        },
 		        body: JSON.stringify(patchCreationObject)
 			}).then(res => {
-				this.updateVm().then(() => {
-					this.render()
-				})
+				this.updateVm()
 				if (this.validInput) createFilesEl.classList.remove('btn-disabled')
 				if (res.ok){
 					new Growl({
@@ -183,10 +166,7 @@ class NewPatch {
 			this.cssChecked = this.el.querySelector('.NewPatch_patchFile #css').checked
 			this.jsChecked = this.el.querySelector('.NewPatch_patchFile #js').checked
 
-			this.updateVm().then(() => {
-				this.render()
-				this.renderCreateButton()
-			})
+			this.updateVm()
 		}
 
 		createFilesEl.addEventListener('click', createFilesHandler)
@@ -197,7 +177,6 @@ class NewPatch {
 	}
 
 	render(){
-		console.debug('renderr')
 		// Update view
 		let html = this.toHTML()
 		this.el.innerHTML = html
@@ -210,11 +189,16 @@ class NewPatch {
 		let createFilesEl = this.el.querySelector('.NewPatch_createBtn')
 		cssAssetEl.checked = this.cssChecked
 		jsAssetEl.checked = this.jsChecked
+
 		cssAssetEl.disabled = !this.cssEnabled
 		jsAssetEl.disabled = !this.jsEnabled
+		if (!this.cssEnabled || !this.jsEnabled){
+			let explanation = 'You can\'t make two assets or patches with the same name – include any extra assets in your main JS / CSS ones for this patch.'
+			cssAssetEl.parentElement.title = explanation
+			jsAssetEl.parentElement.title = explanation
+		}
 
 		let assetEls = [...this.el.querySelectorAll('.NewPatch_patchFileCheckbox')]
-		console.debug(assetEls, cssAssetEl, jsAssetEl)
 		for (let el of assetEls){
 			if (el.disabled){
 				el.closest('.NewPatch_patchFile').classList.add('NewPatch_patchFile-disabled')
@@ -222,12 +206,13 @@ class NewPatch {
 				el.closest('.NewPatch_patchFile').classList.remove('NewPatch_patchFile-disabled')
 			}
 		}
+
 		if (this.validInput){
 			createFilesEl.classList.remove('btn-disabled')
 		} else {
+			createFilesEl.title = 'Must select at least one type of file to create; CSS or JS'
 			createFilesEl.classList.add('btn-disabled')
 		}
-		this.renderCreateButton()
 
 		this.registerHandlers()
 	}

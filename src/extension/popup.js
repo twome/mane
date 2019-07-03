@@ -68,6 +68,14 @@ let app = {
 				dismissable: false
 			})
 		}
+	},
+
+	publish(eventName, publishedData){
+		// TODO
+	},
+
+	subscribe(eventName, handler){
+		// TODO
 	}
 }
 // Add this to the constructor for each component to share this global state to them without boilerplate

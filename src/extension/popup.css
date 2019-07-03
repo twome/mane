@@ -404,7 +404,8 @@ section {
 .NewPatch_patchFile-disabled .NewPatch_patchFileCheckbox::after,
 .NewPatch_patchFile-disabled .NewPatch_patchFileCheckbox:focus::after,
 .NewPatch_patchFile-disabled .NewPatch_patchFileCheckbox:hover::after,
-.NewPatch_patchFile-disabled .NewPatch_patchFileCheckbox:active::after {
+.NewPatch_patchFile-disabled .NewPatch_patchFileCheckbox:active::after,
+.NewPatch_patchFile-disabled .NewPatch_patchFileCheckbox:checked::after {
 	border-color: hsla(39, 0%, 50%, 1);
 	text-shadow: none;
 	background-color: hsla(39, 0%, 50%, 1);

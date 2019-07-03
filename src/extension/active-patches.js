@@ -1,7 +1,7 @@
 import { getActiveTabUrl, getMatchingPatches, fileExtension } from './util.js'
 import Growl from './growl.js'
 
-if (chrome.runtime) browser = chrome
+if (chrome.runtime) browser = chrome // Account for Chrome's non-WebExtension-spec globals
 
 let appConfig
 class ActivePatches {
@@ -32,10 +32,12 @@ class ActivePatches {
 				config: appConfig,
 				app: ActivePatches.app
 			})
-			this.patches = asArray.reduce((map, patch) => {
+			let asMap = asArray.reduce((map, patch) => {
 				map.set(patch.id, patch)
 				return map
 			}, new Map())
+			this.patches = asMap
+			ActivePatches.app.publish('active-patches-fetched', this.patches)
 		} catch (err) {
 			console.error(`Failed getting matching patches`, err)
 			this.patches = new Map()
