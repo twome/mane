@@ -50,7 +50,7 @@ class ActivePatches {
 				event.preventDefault()
 
 				// Send a message to the native app / server asking to open this file locally using the OS' default application (for quickly opening your code editor)
-				fetch(`${appConfig.patchHost}/${appConfig.routes.openFileNative}/${encodeURIComponent(el.dataset.openingSrc)}`, {
+				fetch(`${appConfig.maneServerHost}/${appConfig.routes.openFileNative}/${encodeURIComponent(el.dataset.openingSrc)}`, {
 					method: 'GET',
 					mode: 'cors',
 					headers: {
@@ -74,7 +74,7 @@ class ActivePatches {
 				this.render()
 
 				// Update this patch on the server
-				fetch(`${appConfig.patchHost}/${appConfig.routes.setPatchOptions}/${encodeURIComponent(id)}`, {
+				fetch(`${appConfig.maneServerHost}/${appConfig.routes.setPatchOptions}/${encodeURIComponent(id)}`, {
 					method: 'PUT',
 					mode: 'cors',
 					headers: {
@@ -148,7 +148,7 @@ class ActivePatches {
 			let assets = patch.assets.reduce((acc, asset) => {
 				let assetPath = `${asset.fileUrl}`
 				return acc + `
-					<a href="${appConfig.patchHost}/${assetPath}"
+					<a href="${appConfig.maneServerHost}/${assetPath}"
 						data-opening-src="${assetPath}"
 						class="ActivePatches_asset boxLink"
 						title="Open file in your default native application"

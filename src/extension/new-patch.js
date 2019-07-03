@@ -2,6 +2,7 @@ import { getActiveTabUrl } from './util.js'
 import Growl from './growl.js'
 
 let appConfig
+// NewPatch.app should be bound to the whole app's state
 class NewPatch {
 	constructor(el, {
 		newFileToggles = [
@@ -99,7 +100,7 @@ class NewPatch {
 
 			createFilesEl.classList.add('btn-disabled')
 
-			fetch(`${appConfig.patchHost}/${appConfig.routes.createPatchFile}`, {
+			fetch(`${appConfig.maneServerHostname}:${appConfig.maneServerPort}/${appConfig.routes.createPatchFile}`, {
 				method: 'POST',
 				mode: 'cors',
 				headers: {

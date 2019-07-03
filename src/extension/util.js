@@ -131,8 +131,7 @@ export const getMatchingPatches = async (url, {app}) => {
 	}
 
 	// We need to encode to escape all the special URI characters
-	let patchRequestPath = `${app.cfg.patchHost}/patches-for/${encodeURIComponent(url)}`
-
+	let patchRequestPath = `${app.cfg.maneServerHostname}:${app.cfg.maneServerPort}/patches-for/${encodeURIComponent(url)}`
 
 	let response = await fetch(patchRequestPath, {
 		mode: 'cors'

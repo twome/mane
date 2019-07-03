@@ -7,7 +7,8 @@
 // This is hard-coded & duplicated from popup.js to avoid needing to fetch config from the background or popup extension JS
 let cfg = {
 	logInjections: true,
-	patchHost: 'http://localhost:1917',
+	maneServerHostmame: 'http://localhost:1917',
+	maneServerPort: 1917,
 	routes: {
 		createPatchFile: 'create-patch',
 		openFileNative: 'open-file',
@@ -15,10 +16,11 @@ let cfg = {
 		patches: 'patches',
 	}
 }
+cfg.maneServerHost = `${cfg.maneServerHostname}:${cfg.maneServerPort}`
 // This is also hard-coded & duplicated from popup.js to avoid needing to fetch config from the background or popup extension JS
 const getMatchingPatches = async (url) => {
 	// We need to encode to escape all the special URI characters
-	let patchRequestPath = `${cfg.patchHost}/patches-for/${encodeURIComponent(url)}`
+	let patchRequestPath = `${cfg.maneServerHost}/patches-for/${encodeURIComponent(url)}`
 
 	let response = await fetch(patchRequestPath, {
 		mode: 'cors'
@@ -48,7 +50,7 @@ let patches
 try {
 	patches = await getMatchingPatches(location.href)
 } catch(err){
-	console.error(`Couldn't fetch patches from the Mane app serving at ${cfg.patchHost}; did you forget to start it?`, err)
+	console.error(`Couldn't fetch patches from the Mane app serving at ${cfg.maneServerHost}; did you forget to start it?`, err)
 	patches = [] // Act as if we simply got an empty response
 }
 
@@ -60,7 +62,7 @@ for (let patch of patches){
 		/*
 			If we wanted to insert the script as a `type="module"` _inline_ script (and wrap the body with, eg, a DOMContentLoaded listener), we could get the body text directly here.
 
-			let fileRequest = await fetch(`${cfg.patchHost}/${asset.fileUrl}`)
+			let fileRequest = await fetch(`${cfg.maneServerHost}/${asset.fileUrl}`)
 			let assetBody = await fileRequest.text()
 			let invokeEl = document.createElement('script')
 			if (patch.options.whenToRun){
@@ -72,7 +74,7 @@ for (let patch of patches){
 		*/
 
 		let extension = fileExtension(asset.fileUrl)
-		let fullAssetPath = `${cfg.patchHost}/${asset.fileUrl}`
+		let fullAssetPath = `${cfg.maneServerHost}/${asset.fileUrl}`
 
 		let invokeEl // The actual dependency invocation
 		if (extension === 'js'){
