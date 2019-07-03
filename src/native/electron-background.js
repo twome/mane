@@ -86,6 +86,11 @@ let createTray = async () => {
 			// download extension .ctx file
 		{ type: 'separator' },
 		{
+			label: `Server listening at localhost:${port}`,
+			id: 'listening-host',
+			enabled: false
+		},
+		{
 			label: 'Quit',
 			id: 'quit',
 			// icon: nativeImage.createFromPath('../images/icon/icon8-exit-48.png'),
