@@ -88,7 +88,7 @@ class ActivePatches {
 						unsyncedState = null
 						new Growl({
 							type: Growl.types.Success,
-							message: 'Changed patch options and saved to disk. Reload the page with Cmd+R / F5.',
+							message: 'Changed patch options and saved to disk. Reload the page with <kbd>cmd+R</kbd> / <kbd>F5</kbd>.',
 							attachPoint: ActivePatches.app.el
 						})
 					} else {

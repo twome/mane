@@ -150,6 +150,17 @@ section {
 	padding-bottom: 0.62em;
 }
 
+kbd {
+	font-size: 0.9em;
+	border-radius: 3px;
+	padding: 0px 4px;
+	position: relative;
+	display: inline-flex;
+	background-color: hsla(0,0%,100%,0.5);
+	font-weight: 600;
+	font-family: 'Inter UI', 'Helvetica Neue', 'Helvetica', 'Source Sans Pro', 'Arial', sans-serif;
+}
+
 /*
 	Objects
 */
