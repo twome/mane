@@ -16,6 +16,8 @@ Key: BUG, FEAT (new feature), DEBT (technical debt), SEC (security issue)
 
 
 
+- SEC 2: pages can read the contents of patches inserted into the page dom. fix: run patches in/as content scripts
+
 - BUG 2: re-enable cache for patch options
 
 - DEBT 2: whenToRun should be per-asset, not per-patch
@@ -38,13 +40,9 @@ Key: BUG, FEAT (new feature), DEBT (technical debt), SEC (security issue)
 
 - FEAT 2: Use instructions to boot-launch https://github.com/Teamwork/node-auto-launch
 
-- FEAT 2: make the injector wait until DOMContentLoaded to write the dep-invocations
-
-- FEAT 2: grey out the checkbox to make a preexisting asset with the exact same matchlist
-
 - FEAT 2: allow colons in matchers
 	- must separate the IDs and asset filenames?
-	- replace `:` with `_` in filenames
+	- replace `:` with what in filenames? urlencode-style character–>number system?
 	- indicator `-renamed---`
 	- use special comment to write matchlist in file
 
@@ -57,9 +55,9 @@ Key: BUG, FEAT (new feature), DEBT (technical debt), SEC (security issue)
 	SECURITY: obvious issues
 
 - FEAT 2: minimal memory/cpu footprint executable; boot on load
-	- initially only accessible via process table `ps -e`?
+	- initially only accessible via process table `ps -e` / Activity Monitor / Task Manager?
 
-- FEAT 2: use native communication instead of HTTP between server and extension
+- FEAT 2: use native inter-process communication instead of HTTP between server and extension
 
 - FEAT 2: set patch storage dir from server CL arg & extension popup
 
@@ -79,8 +77,6 @@ Key: BUG, FEAT (new feature), DEBT (technical debt), SEC (security issue)
 - FEAT 3: package with Electron Forge
 
 - FEAT 3: flash the extension icon when injections are finished loading & have started to run
-
-- BUG 3: bundle Inconsolata and Inter UI fonts
 
 - FEAT 3: configuration using a CLI arguments library + dotenv
 
@@ -107,7 +103,7 @@ We can't easily do any permissions restrictions or granularity (we could try and
 	- trust can be referred from a developer you trust (that can read the code and audit)
 	- trust per-version; ie cache the remote file and ONLY ever use the static copy, only **manually** updating to the new version from the source URL when the auto-checker detects an update, 
 	- patch update **MUST** present a diff and changelog before user can accept. 
-	- changelog must be > ~30 characters. 
+	- changelog must be > \~30 characters. 
 	- to ensure transparency & readability, minified/obscured JS is **EXPLICITLY BANNED** and warn user if patches look obscured
 		- statically analyse patches for:
 			- short variable names or 

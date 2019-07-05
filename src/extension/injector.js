@@ -32,10 +32,13 @@ const getMatchingPatches = async (url) => {
 				console.error('Matching patch had no options; filling with defaults', patch)
 				patch.options = {}
 			}
-			Object.assign(patch.options, {
+			let defaults = {
 				on: true,
 				whenToRun: 'dom'
-			})
+			}
+			for (let [key, value] of Object.entries(defaults)){
+				if (!patch.options.hasOwnProperty(key)) patch.options[key] = value
+			}
 		}
 		return patchArr
 	} else {
