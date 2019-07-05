@@ -2,21 +2,29 @@
 
 Key: BUG, FEAT (new feature), or DEBT (technical debt)
 
-- BUG 1: enabling/disabling patches in ext says "saved to disk" but on reopening popup, nothings changed
-
-- BUG 1: NewPatch updateVm incorrectly setting 'create' btn validity
-
 - BUG 1: cache keeps showing patch unless ALL assets are deleted
+
+- BUG 1: don't allow sub-words to match (like 'fly.biz' to match on 'www.butterfly.biz').
+	- basically, for filename matchlists, just use strings + wildcards (with automatic wildcards at the beginning and end), rather than actual regexes, but let regexes (which will have to be escaped out of the asset comment, too!) still be possible via special comments for advanced cases. 
+	- maybe look for JS-style /.../ regex delimeters in the matchList string?
 
 - FEAT 1: specify the active matcher in server res
 
 - BUG 1: changing cache.patches at all fucks up because getAllPatches doesn't check for diffs before using caches
 
-- FEAT 1: proper icon
-
-- BUG 1: new patch tries to write to the whole dir!! (fixed?)
 
 
+- BUG 2: re-enable cache for patch options
+
+- DEBT 2: whenToRun should be per-asset, not per-patch
+
+- FEAT 2: whereas normally dir names with the main patch folder should be used to group assets into a patch and match them to the dir name's matchlist, the url matcher should ignore dirs in patch folder prefixed with "\_", so users can easily import their own utility libraries served from urls relative to their patches
+
+- FEAT 2: add a special comment to patch files for whenToRun
+
+- FEAT 2: only add random string to truncated filenames if not unique, move the "truncated" bit to the end of the filename for better sorting/readability, and replace "truncated" with "mane-patch" or something
+
+- FEAT 2: proper icon
 
 - FEAT 2: long-term storage of patches in browser to save FS reads and then you'd only need to run the native to refresh them
 
