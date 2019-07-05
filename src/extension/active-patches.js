@@ -37,7 +37,7 @@ class ActivePatches {
 				return map
 			}, new Map())
 			this.patches = asMap
-			ActivePatches.app.publish('active-patches-fetched', this.patches)
+			ActivePatches.app.events.publish('active-patches-fetched', this.patches)
 		} catch (err) {
 			console.error(`Failed getting matching patches`, err)
 			this.patches = new Map()

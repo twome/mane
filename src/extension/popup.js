@@ -3,6 +3,7 @@
 import Growl from './growl.js'
 import NewPatch from './new-patch.js'
 import ActivePatches from './active-patches.js'
+import PubSub from './pubsub.js'
 
 console.info('Mane popup opening')
 
@@ -27,6 +28,8 @@ let config = {
 	appHostElSelector: '[data-app="mane"]'
 }
 config.maneServerHost = `${config.maneServerHostname}:${config.maneServerPort}`
+
+let pubSubTracker = new PubSub()
 
 // App-wide 'global' state
 let app = {
@@ -70,13 +73,7 @@ let app = {
 		}
 	},
 
-	publish(eventName, publishedData){
-		// TODO
-	},
-
-	subscribe(eventName, handler){
-		// TODO
-	}
+	events: pubSubTracker
 }
 // Add this to the constructor for each component to share this global state to them without boilerplate
 app.componentTypes.forEach(typeConstructorFn => {

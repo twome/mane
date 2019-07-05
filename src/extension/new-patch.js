@@ -50,11 +50,10 @@ class NewPatch {
 
 		this.updateVm()
 
-		// TEMP DEV HACK - we need an event to watch for when we've fetched the list of active patches
-		let onActivePatchesFetched = async (msg, data) => {
+		let onActivePatchesFetched = async (data) => {
 			await this.updateVm()
 		}
-		setTimeout(onActivePatchesFetched, 1000)
+		NewPatch.app.events.subscribe('active-patches-fetched', onActivePatchesFetched)
 	}
 
 	async updateVm(renderAfter = true){
