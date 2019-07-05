@@ -156,3 +156,10 @@ export const getMatchingPatches = async (url, {app}) => {
 
 export const resolveIn = waitMs => new Promise(resolve => setTimeout(resolve, waitMs))
 export const rejectIn = waitMs => new Promise((res, reject) => setTimeout(reject, waitMs))
+
+// From https://stackoverflow.com/a/35385518
+export const htmlToElement = html => {
+    var template = document.createElement('template')
+    template.innerHTML = html.trim()
+    return template.content.firstChild
+}

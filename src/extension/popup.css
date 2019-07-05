@@ -406,6 +406,12 @@ section {
 .NewPatch_patchFile-disabled .NewPatch_patchFileCheckbox:hover::after,
 .NewPatch_patchFile-disabled .NewPatch_patchFileCheckbox:active::after,
 .NewPatch_patchFile-disabled .NewPatch_patchFileCheckbox:checked::after {
+	/*
+		We'll hide the checkmark to emphasise that this new file won't be created if disabled.
+		We won't actually uncheck the box in JS, as that would interrupt the user's choice if they change some other validation parameter which would enable the checkbox again.
+	*/
+	content: '';
+
 	border-color: hsla(39, 0%, 50%, 1);
 	text-shadow: none;
 	background-color: hsla(39, 0%, 50%, 1);

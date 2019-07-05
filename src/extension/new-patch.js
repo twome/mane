@@ -1,4 +1,5 @@
-import { getActiveTabUrl } from './util.js'
+import { getActiveTabUrl, htmlToElement } from './util.js'
+// TODO // import getShortestSelector from './get-shortest-selector.js'
 import Growl from './growl.js'
 
 let appConfig
@@ -34,6 +35,7 @@ class NewPatch {
 
 		// State
 		this.createBtnTimer = null
+		this.firstRender = true
 
 		let createDefaultMatchList = async () => {
 			let currentPage = await getActiveTabUrl(NewPatch.app).catch(() => 'example.com')
@@ -55,11 +57,12 @@ class NewPatch {
 		setTimeout(onActivePatchesFetched, 1000)
 	}
 
-	async updateVm(dontRender){
+	async updateVm(renderAfter = true){
 
 		// HACK - fix: communicate/share state between components
 		let matchingPatches = new Map()
 		if (this.fetchMatchingPatches) matchingPatches = this.fetchMatchingPatches() // Parent app may not have injected this fn yet
+
 		this.jsEnabled = true
 		this.cssEnabled = true
 		for (let patch of matchingPatches.values()){
@@ -68,32 +71,30 @@ class NewPatch {
 					// We shouldn't make another asset of the same filetype if one already exists for this exact patch ID
 					if (asset.assetType === appConfig.assetTypes.js){
 						this.jsEnabled = false
-						this.jsChecked = false
 					}
 					if (asset.assetType === appConfig.assetTypes.css){
 						this.cssEnabled = false
-						this.cssChecked = false
 					}
 				}
 			}
 		}
 		this.validInput = this.jsEnabled && this.jsChecked || this.cssEnabled && this.cssChecked
 
-		if (dontRender) return
-		this.render()
+		if (renderAfter) this.render()
 	}
 
-	registerHandlers(){
+	registerMatchListHandlers(){
 		let newMatchListEl = this.el.querySelector('.NewPatch_matchList')
-		let createFilesEl = this.el.querySelector('.NewPatch_createBtn')
-		let cssAssetEl = this.el.querySelector('.NewPatch_patchFile #css')
-		let jsAssetEl = this.el.querySelector('.NewPatch_patchFile #js')
-
 		let newMatchListHandler = () => {
 			this.matchListStr = newMatchListEl.value
 			this.updateVm()
 		}
+		newMatchListEl.addEventListener('change', newMatchListHandler)
+		newMatchListEl.addEventListener('input', newMatchListHandler)
+	}
 
+	registerCreateFilesHandlers(){
+		let createFilesEl = this.el.querySelector('.NewPatch_createBtn')
 		let createFilesHandler = () => {
 			const flashFail = () => {
 				createFilesEl.classList.add('btn-isFailed')
@@ -110,11 +111,11 @@ class NewPatch {
 			if (!this.validInput) return false
 
 			let assetsToCreate = []
-			if (this.cssChecked) assetsToCreate.push({
+			if (this.cssChecked && this.cssEnabled) assetsToCreate.push({
 				assetType: appConfig.assetTypes.css,
 				fileUrl: this.matchListStr + '.css'
 			})
-			if (this.jsChecked) assetsToCreate.push({
+			if (this.jsChecked && this.jsEnabled) assetsToCreate.push({
 				assetType: appConfig.assetTypes.js,
 				fileUrl: this.matchListStr + '.js'
 			})
@@ -161,52 +162,59 @@ class NewPatch {
 				})
 			})
 		}
-
-		let assetTypesHandler = () => {
-			this.cssChecked = this.el.querySelector('.NewPatch_patchFile #css').checked
-			this.jsChecked = this.el.querySelector('.NewPatch_patchFile #js').checked
-
-			this.updateVm()
-		}
-
 		createFilesEl.addEventListener('click', createFilesHandler)
-		newMatchListEl.addEventListener('change', newMatchListHandler)
-
-		let assetTypes = [cssAssetEl, jsAssetEl]
-		assetTypes.forEach(el => el.addEventListener('change', assetTypesHandler))
 	}
 
 	render(){
 		// Update view
-		let html = this.toHTML()
-		this.el.innerHTML = html
+		let parts = this.toHTMLParts()
 
-		let newMatchListEl = this.el.querySelector('.NewPatch_matchList')
-		newMatchListEl.value = this.matchListStr
+		let headerEl = this.el.querySelector('.NewPatch_header')
+		if (!headerEl){
+			headerEl = htmlToElement(parts.header)
+			this.el.appendChild(headerEl)
+		}
+
+		let matchListEl = this.el.querySelector('.NewPatch_matchList')
+		if (!matchListEl){
+			matchListEl = htmlToElement(parts.matchList)
+			this.el.appendChild(matchListEl)
+			this.registerMatchListHandlers()
+		}
+		matchListEl.value = this.matchListStr
+
+		let patchFilesEl = this.el.querySelector('.NewPatch_patchFiles')
+		if (patchFilesEl) this.el.removeChild(patchFilesEl)
+		patchFilesEl = htmlToElement(parts.patchFiles)
+		this.el.appendChild(patchFilesEl) // The only VM-reliant el happens to be last anyway
+		this.registerCreateFilesHandlers()
 
 		let cssAssetEl = this.el.querySelector('.NewPatch_patchFileCheckbox#css')
 		let jsAssetEl = this.el.querySelector('.NewPatch_patchFileCheckbox#js')
-		let createFilesEl = this.el.querySelector('.NewPatch_createBtn')
 		cssAssetEl.checked = this.cssChecked
 		jsAssetEl.checked = this.jsChecked
-
 		cssAssetEl.disabled = !this.cssEnabled
 		jsAssetEl.disabled = !this.jsEnabled
-		if (!this.cssEnabled || !this.jsEnabled){
-			let explanation = 'You can\'t make two assets or patches with the same name – include any extra assets in your main JS / CSS ones for this patch.'
-			cssAssetEl.parentElement.title = explanation
-			jsAssetEl.parentElement.title = explanation
-		}
 
+		let assetTypesHandler = () => {
+			this.cssChecked = cssAssetEl.checked
+			this.jsChecked = jsAssetEl.checked
+			this.updateVm()
+		}
 		let assetEls = [...this.el.querySelectorAll('.NewPatch_patchFileCheckbox')]
 		for (let el of assetEls){
+			el.addEventListener('change', assetTypesHandler)
+
 			if (el.disabled){
 				el.closest('.NewPatch_patchFile').classList.add('NewPatch_patchFile-disabled')
+				let explanation = 'You can\'t make two assets or patches with the same name – include any extra assets in your main JS / CSS ones for this patch.'
+				el.parentElement.title = explanation
 			} else {
 				el.closest('.NewPatch_patchFile').classList.remove('NewPatch_patchFile-disabled')
 			}
 		}
 
+		let createFilesEl = this.el.querySelector('.NewPatch_createBtn')
 		if (this.validInput){
 			createFilesEl.classList.remove('btn-disabled')
 		} else {
@@ -214,10 +222,12 @@ class NewPatch {
 			createFilesEl.classList.add('btn-disabled')
 		}
 
-		this.registerHandlers()
+		if (this.firstRender) {
+			this.firstRender = false
+		}
 	}
 
-	toHTML(){
+	toHTMLParts(){
 		let newFileToggles = this.newFileToggles.reduce((acc, toggle) => {
 			return acc + `
 			<label for="${toggle.name}" class="NewPatch_patchFile">
@@ -227,17 +237,17 @@ class NewPatch {
 			`
 		}, '')
 
-		let fullTemplate = `
-			<header class="NewPatch_header spaceyHeader spaceyHeader-onLight">New patch for URLs:</header>
-			<input type="text" class="NewPatch_matchList"
+		let fullTemplate = {
+			header: `<header class="NewPatch_header spaceyHeader spaceyHeader-onLight">New patch for URLs:</header>`,
+			matchList: `<input type="text" class="NewPatch_matchList"
 				title="Comma-separated list of URL matchers (regular expressions) to trigger this patch's insertion into webpages"
 				placeholder="*.bandcamp.com,sa.org.au"
-			>
-			<div class="NewPatch_patchFiles">
+			>`,
+			patchFiles: `<div class="NewPatch_patchFiles">
 				${newFileToggles}
 				<button class="NewPatch_createBtn btn">Create files</button>
-			</div>
-		`
+			</div>`
+		}
 
 		return fullTemplate
 	}
