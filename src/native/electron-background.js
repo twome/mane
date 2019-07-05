@@ -72,6 +72,12 @@ let createTray = async () => {
 			]
 		},*/
 		{
+			label: `Mane server listening at localhost:${port}`,
+			id: 'title',
+			enabled: false
+		},
+		{ type: 'separator' },
+		{
 			label: 'Open patches folder',
 			id: 'openPatchesFolderOs',
 			click: (menuItem, browserWindow, event) => {
@@ -85,11 +91,6 @@ let createTray = async () => {
 		// { label: 'Install browser extension for > (submenu)…', id: 'startOnBoot' },
 			// download extension .ctx file
 		{ type: 'separator' },
-		{
-			label: `Server listening at localhost:${port}`,
-			id: 'listening-host',
-			enabled: false
-		},
 		{
 			label: 'Quit',
 			id: 'quit',
