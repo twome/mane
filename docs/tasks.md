@@ -1,6 +1,8 @@
 # tasks / bugs
 
-Key: BUG, FEAT (new feature), or DEBT (technical debt)
+Key: BUG, FEAT (new feature), DEBT (technical debt), SEC (security issue)
+
+- SEC 1: any foreign page can request anything from the patch server
 
 - BUG 1: cache keeps showing patch unless ALL assets are deleted
 

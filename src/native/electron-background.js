@@ -24,14 +24,15 @@ state.appSettings = {
 		whenToRun: 'dom'
 	}
 }
-state.appLaunchedFrom = 'TODO'
+// TODO // state.appLaunchedFrom = 'TODO'
 state.trayIconConnected = nativeImage.createFromPath(trayIconConnectedPath)
 state.trayIconDisconnected = nativeImage.createFromPath(trayIconDisconnectedPath)
 
 let connectToBrowsers = async () => {
 	// TODO
 	/*
-		SECURITY: We need to only accept requests from the extension, otherwise pages can request app data and every patch in the dir (privacy). IPC? WebSockets? HTTPS?
+		SECURITY: We need to only accept requests from the extension, otherwise pages can request API routes and every patch in the dir. You could infer a lot about users given the sites they've chosen to modify, and the contents / comments in the patch assets. IPC? WebSockets? HTTPS?
+
 		SECURITY: We also need to ensure there are no MITMs from other local apps watching all localhost ports (or is this already a fully compromised system then?
 	*/
 	throw new errors.NoBrowserConnection()
@@ -84,12 +85,10 @@ let createTray = async () => {
 				openStorageDir()
 			}
 		},
+
 		// TODO
-		/*{ type: 'separator' },
-		{ label: 'Make Mane start when macOS boots…', id: 'startOnBoot' },*/
-		// TODO
-		// { label: 'Install browser extension for > (submenu)…', id: 'startOnBoot' },
-			// download extension .ctx file
+		// { label: 'Install browser extension for > (submenu: Chrome, Firefox, Safari etc.)…', id: 'startOnBoot' },
+			// ~ download extension .ctx file or navigate to relevant repo/store
 		{ type: 'separator' },
 		{
 			label: 'Quit',
@@ -103,30 +102,16 @@ let createTray = async () => {
 			}
 		},
 	])
-	tray.setToolTip(`Mane native app - serves patch files to Mane browser extensions for modifying web pages. App launched from: ${state.appLaunchedFrom}`)
+	// BROKEN
+	// tray.setToolTip(`Mane native app - serves patch files to Mane browser extensions for modifying web pages. App launched from: ${state.appLaunchedFrom}`)
 	// tray.setTitle('Mane')
 
 	tray.setContextMenu(trayContextMenu)
 
-	// TODO
-	let showBackupMenu = () => {
-		// ~ show *all* options, especially allowing to easily quit
-	}
-
-	tray.on('click', (event, trayIconBounds) => {
-		if (event.altKey){
-			showBackupMenu()
-		} else {
-			// Show BrowserWindow popup menu at trayIconBounds
-		}
-	})
-	tray.on('right-click', (event, trayIconBounds) => {
-		showBackupMenu()
-	})
-
 	if (process.env.NODE_ENV !== 'development') app.dock.hide() // We don't need a dock icon for a tray-only app
 
 	try {
+		// TODO
 		// let connections = await connectToBrowsers()
 		onConnectionGained()
 	} catch (err) {
@@ -135,38 +120,7 @@ let createTray = async () => {
 	}
 }
 
-/*let createTrayPopupWindow = ()=>{
-	// Create the browser window.
-	trayPopupWindow = new BrowserWindow({
-		width: 1400,
-		height: 600,
-		show: false,
-		fullscreenable: false,
-		webPreferences: {
-			nodeIntegration: false,
-			enableRemoteModule: false
-		},
-		title: 'Mane',
-		icon: state.trayIconDisconnected,
-		safeDialogs: true,
-		// titleBarStyle: 'hidden'
-		// frame: false,
-		// autoHideMenuBar: true
-	})
 
-	trayPopupWindow.loadFile('menubar-window.html')
-
-	// Open the DevTools.
-	trayPopupWindow.webContents.openDevTools()
-
-	// Emitted when the window is closed.
-	trayPopupWindow.on('closed', () => {
-		// Dereference the window object, usually you would store windows
-		// in an array if your app supports multi windows, this is the time
-		// when you should delete the corresponding element.
-		trayPopupWindow = null
-	})
-}*/
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -183,15 +137,11 @@ app.on('window-all-closed', () => {
 })
 
 app.on('activate', () => {
-	// On macOS it's common to re-create a window in the app when the
-	// dock icon is clicked and there are no other windows open.
 	if (tray === null){
 		createTray()
 	} else if (tray){
 		tray.popUpContextMenu()
 	}
-
-	// trayPopupWindow.showInactive()
 })
 
 
@@ -209,7 +159,7 @@ app.on('web-contents-created', (event, contents) => {
 
 
 /*
-	Server
+	Mane patches server
 */
 let server = makeServer()
 server.listen(port, (err)=>{
@@ -217,7 +167,7 @@ server.listen(port, (err)=>{
 		throw err
 	}
 	// Server ready function
-	console.info(`Running Mane server from native menubar at :${port}`)
+	console.info(`Mane server is listening at :${port}`)
 })
 
 console.info('Starting the Mane Electron app...')

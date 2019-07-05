@@ -4,7 +4,13 @@
 
 ##### Status: pre-alpha; not for public use
 
-A native menubar / system tray app and browser extension which automatically inserts modifications (JavaScript and CSS) into certain websites whenever you visit them. These "patches" are stored in a folder on your hard drive or a remote Git repository (WIP), so you can use patches made by other people and keep them in your cloud files with no fuss or accounts necessary. Hide sticky headers, add keyboard shortcuts to music players, improve hideous colour palettes, or cut out annoyances which adblockers miss because they aren't technically ads – jury-rig any part of the web to your liking!
+#### Security warnings:
+
+- Treat your patches folder as if it were public: currently, any malicious website's JavaScript can request anything on the Mane server over `localhost`, and the Mane server doesn't yet discern who's asking, so it will respond freely. This will be fixed before leaving alpha.
+
+---
+
+Mane is a native menubar / system tray app and browser extension which automatically inserts modifications (JavaScript and CSS) into certain websites whenever you visit them. These "patches" are stored in a folder on your hard drive or a remote Git repository (WIP), so you can use patches made by other people and keep them in your cloud files with no fuss or accounts necessary. Hide sticky headers, add keyboard shortcuts to music players, improve hideous colour palettes, or cut out annoyances which adblockers miss because they aren't technically ads – jury-rig any part of the web to your liking!
 
 This is similar in approach to [GreaseMonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)/[TamperMonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo), and '[User Javascript & CSS](https://chrome.google.com/webstore/detail/user-javascript-and-css/nbhcbdghjpllgmfilhnhkllmkecfmpld)' on Chrome, but with an emphasis on a simple & nice user interface, and being able to edit and store patches in whatever way suits you (instead of weird custom editors and databases).
 
