@@ -18,21 +18,23 @@ This is similar in approach to [GreaseMonkey](https://addons.mozilla.org/en-US/f
 
 #### Server (to read and write patches as files)
 
-**CLI**: Clone this repo, then, from the command line, `cd` into it, run `yarn install`, and run `node -r esm bin/mane.js` to start the Node server.
+**CLI**: Clone this repo, then, from the command line, `cd` into it, run `yarn install` to fetch dependencies, & then `yarn start-cli` to start the Node server on `localhost:1917` by default.
 
-**macOS Electron app**: Run `yarn native` to launch the GUI app. It will briefly appear in the Dock, then move to the menubar/tray.
+**macOS Electron app**: Run `yarn native` to launch the GUI app. It will briefly appear in the Dock, then move to the menubar/tray. No pre-packaged executables are ready yet, sorry!
 
 #### Browser extension (to inject patches into webpages) 
 
-Turn on 'developer mode' in your browser's extension manager, then load this repo's `src/extension/` folder as an "unpacked extension".
+Turn on 'developer/debug mode' in your browser's extension manager, then load this repo's `src/extension/` folder as an "unpacked extension" or similar.
+
+[Properly packaged extension files & browser extension store links will come soon.]
 
 ## Usage
 
-<i>**A note on terminology:** Here we refer to a "patch" to mean "a collection of JS and CSS files that are activated according to their list of URL matchers". "Matchers" are [regular expressions](https://regexr.com/) which test against the browser's current URL. If any of a patch's matches match the current page's URL, the browser extension will inject all of its files into the page.</i>
+<i>**A note on terminology:** Here we refer to a "patch" to mean "a collection of JS and CSS files that are activated according to their list of URL matchers". "Matchers" are like [regular expressions](https://regexr.com/) which test against the browser's current URL. If any of a patch's matches match the current page's URL, the browser extension will inject all of its files into the page.</i>
 
-You can quickly make a new patch that matches the current page's **domain** (eg. `google.com` - which includes `maps.google.com`, `www.google.com`, and `google.com/a-search-result`) by clicking 'New patch' in the Mane browser extension's popup. This will automatically create a new empty CSS and/or JS file in this repo's `patches/` folder, and open them in your default code editor. 
+You can quickly make a new patch that matches the current page's **domain** (eg. `google.com` - which matches `maps.google.com`, `www.google.com`, and `google.com/a-search-result`) by clicking 'New patch' in the Mane browser extension's popup. This will automatically create a new empty CSS and/or JS file in your Mane patches folder (by default, `~/.mane-patches`), and then immediately open them in your OS's default code editor.
 
-You can disable a patch using the browser extension's popup (which will list any patches on the current page), or by including a comment in the patch file(s) that looks like this:
+You can disable a patch using the browser extension's popup (which will list any patches matching the current page), or by including a comment in the patch file(s) that looks like this [TODO]:
 
 ```javascript
 /* mane-options active:false */
@@ -64,7 +66,7 @@ bandcamp.com,spotify.com.js
 
 (Don't worry: URLs can't include commas, so there's no potential for confusion.)
 
-To add some CSS *and* some JavaScript that run on the same matcher (and thus would form one patch together), create one of each file with the same filename, but different extensions:
+To add some CSS *and* some JavaScript that run on the same matcher (which would together form one patch), create one of each file with the **same filename, but different extensions**:
 
 ```
 bandcamp.com.css
@@ -77,9 +79,9 @@ Normally, a filename for a patch will simply be the matchList concatenated into 
 
 It's a bit risky to create gigantic path names; lots of programs don't deal well with excessive sizes. Instead, we'll: 
 	
-- give this patch's ID a random prefix, plus a sample of a few of the matches for human readability
+- give this patch a sample of a few of the matches for human readability
 - name the assets (JS & CSS) with that ID,
-- put them in a folder that has an ID 
+- put them in a folder named after that ID [TODO]
 - insert the special comment `/* patch-urls <matches string goes here> */` at the top of each asset
 
 When applying patches, we'll resolve each domain by:
@@ -91,12 +93,6 @@ When applying patches, we'll resolve each domain by:
 
 The app should cache an index file of the locations of assets for all matchers from every patch's matchList, as looking through so many FS files will be very slow. It should also cache the contents of the assets in memory for repeated visits to pages with the same matchers.
 
-## Injecting patches' JS and CSS files into pages without the Mane browser extension
-
-Install Chrome extension [User Javascript & CSS](https://chrome.google.com/webstore/detail/user-javascript-and-css/nbhcbdghjpllgmfilhnhkllmkecfmpld) (it's a very dry name, but a well-designed and straightforward extension), which lets you add custom JS / CSS to any page, according to a text-based filter for which pages get which JS / CSS. 
-
-To use this JS / CSS, go to any page in your browser, click the User Javascript & CSS button, click 'Add new' and then copy the contents of these files into the relevant panes. "UJS&CSS" will then automatically detect any time you visit a URL that is based on your current page's domain (eg "twitter.com"), and will add these files into the page.
-
 ## We use the work of:
 
 Icons made by <div><a href="https://www.flaticon.com/authors/google" title="Google">Google</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
@@ -105,4 +101,4 @@ Icons made by <div><a href="https://www.flaticon.com/authors/google" title="Goog
 
 ## License
 
-MIT
+[MIT](https://opensource.org/licenses/MIT)
