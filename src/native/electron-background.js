@@ -7,8 +7,8 @@ import * as errors from './errors.js'
 
 // Config
 let port = 1917
-let trayIconConnectedPath = path.join(__dirname, '../images/icon/tray_mac_grey.png')
-let trayIconDisconnectedPath = path.join(__dirname, '../images/icon/tray_mac_inverted-alpha.png')
+let trayIconConnectedPath = path.join(__dirname, './images/icon/tray_mac_grey.png')
+let trayIconDisconnectedPath = path.join(__dirname, './images/icon/tray_mac_inverted-alpha.png')
 
 // State
 // Keep a global reference of the window object, if you don't, the window will
@@ -65,7 +65,7 @@ let createTray = async () => {
 		/*{ label: 'Preferences',
 			id: 'preferences',
 			sublabel: `These save to <YOUR_PATCHES_FOLDER>/app-settings.json`,
-			// icon: nativeImage.createFromPath('../images/icon/icon8-adjust-48.png'),
+			// icon: nativeImage.createFromPath('./images/icon/icon8-adjust-48.png'),
 			submenu: [
 				{ label: 'Start Mane on login', role: 'startAppWithOsLogin', type: 'checkbox' },
 				{ label: 'Hide the menubar icon until Mane is next launched', role: 'hideUntilAppOpened', type: 'checkbox' },
@@ -93,7 +93,7 @@ let createTray = async () => {
 		{
 			label: 'Quit',
 			id: 'quit',
-			// icon: nativeImage.createFromPath('../images/icon/icon8-exit-48.png'),
+			// icon: nativeImage.createFromPath('./images/icon/icon8-exit-48.png'),
 			click: (menuItem, browserWindow, event) => {
 				/*
 					TODO: quitGracefully
