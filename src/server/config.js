@@ -17,10 +17,15 @@ export let getConfig = () => {
 		recentUrlsHistoryLength: 500,
 		// storageDir: path.join(process.cwd(), '/patches/'),
 		// optionsJsonPath: path.join(process.cwd(), '/patches/options.json'),
-		excessLengthIndicator: '-truncated---',
-		specialCommentToken: 'patch-urls',
+		excessLengthIndicator: '_mane-patch',
+		specialCommentTokenMatchList: 'patch-urls',
+		specialCommentTokenWhenToRun: 'when-to-run',
 		fsCacheDir: '.cache',
 		fsCacheMatchListsFilename: 'fs-cache-matchlists.json',
+		patchDefaultOptions: {
+			on: true,
+			whenToRun: 'dom'
+		},
 
 		// Patch filenames
 		maxFilenameLength: 60,
@@ -34,7 +39,9 @@ export let getConfig = () => {
 		assetTypes: {
 			Js: 1,
 			Css: 2
-		}
+		},
+
+		verbosity: 1
 	}
 	cfg.storageDir = path.join(os.homedir(), '/.mane-patches')
 	cfg.optionsJsonPath = path.join(cfg.storageDir, 'options.json')
