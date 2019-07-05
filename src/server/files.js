@@ -52,7 +52,8 @@ export const createPatchOptionsFromDir = async ({cfg, cache}) => {
 }
 
 export const getPatchOptions = async ({cfg, cache}) => {
-	if (cache.patchOptions) return cache.patchOptions
+	// TODO cache
+	// if (cache.patchOptions) return cache.patchOptions
 
 	let optionsObj
 	try {
@@ -67,9 +68,10 @@ export const getPatchOptions = async ({cfg, cache}) => {
 }
 
 export const setPatchOptions = async (allOptions, {cfg, cache}) => {
-	if (isEqual(cache.patchOptions, allOptions)){
+	// TODO re-enable cache
+	/*if (isEqual(cache.patchOptions, allOptions)){
 		return true // No changes needed
-	}
+	}*/
 	cache.patchOptions = allOptions
 	await writeFile(cfg.optionsJsonPath, JSON.stringify(allOptions, undefined, 2))
 }

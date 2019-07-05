@@ -38,10 +38,9 @@ export class Patch {
 		}
 
 		// Blend in options defaults
-		options = Object.assign(options, {
-			on: true,
-			whenToRun: 'dom'
-		})
+		for (let [key, value] of Object.entries(config.patchDefaultOptions)){
+			if (!options.hasOwnProperty(key)) options[key] = value
+		}
 
 		Object.assign(this, { options, assets, matchListInComment })
 
@@ -79,21 +78,28 @@ export class Patch {
 
 			if (!this.matchListInComment){ // We don't want to add this comment if it already exists!
 				for (let asset of this.assets){
-					asset.body = `/* patch-urls ${concatenatedMatchList} */\n` + asset.body
+					asset.body = `/* ${config.specialCommentTokenMatchList} ${concatenatedMatchList} */\n` + asset.body
 				}
 			}
 			this.matchListInComment = true
 
-			// Generate a human-readable preview of some of the matches, plus a randomised ID string
+			// Generate a human-readable preview of some of the matches
 			let previewLength = config.maxFilenameLength - config.excessLengthIndicator.length - config.shortIdLength
 			let truncated = truncateMatchList(this.matchList, previewLength)
 
-			let idShort = getRandomId(config.shortIdLength)
+			// TODO check the uniqueness of this ID, and if necessary append random characters
+			// let idShort = getRandomId(config.shortIdLength)
 
 			// Then we use this as the ID, which will in turn become the filename
-			this.id = idShort + config.excessLengthIndicator + truncated
+			this.id = truncated + config.excessLengthIndicator
 		}
 
+		for (let asset of this.assets){
+			if (this.options.whenToRun !== config.patchDefaultOptions.whenToRun && !this.whenToRunInComment){
+				asset.body = `/* ${config.specialCommentTokenWhenToRun} ${this.options.whenToRun} */\n` + asset.body
+				this.whenToRunInComment = true
+			}
+		}
 	}
 
 	addAsset(assetType, fileUrl){

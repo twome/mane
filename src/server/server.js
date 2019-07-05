@@ -228,6 +228,7 @@ export const makeServer = (cfg = config) => {
 
 	server.put(`/${cfg.routes.setPatchOptions}/:patchId`, bodyParser.json())
 	server.put(`/${cfg.routes.setPatchOptions}/:patchId`, (req, res, next) => {
+		if (config.verbosity >= 1) console.info('Setting patch options:', req.url, req.body)
 		setSinglePatchOptions(decodeURIComponent(req.params.patchId), req.body, {cfg, cache})
 			.then(() => {
 				res.sendStatus(200)
