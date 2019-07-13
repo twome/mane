@@ -4,7 +4,9 @@
   "description": "A Node + WebExtension app that automatically inserts your custom JavaScript and CSS files, stored on your hard drive, into web pages to customise them.",
   "main": "lib/programmatic.js",
   "programmatic-module": "lib/programmatic.js",
-  "bin": { "mane" : "./bin/cli.js" },
+  "bin": {
+    "mane": "./bin/cli.js"
+  },
   "cli-executable": "bin/cli.js",
   "author": "Tom Kenny <tom@twome.name>",
   "license": "MIT",
