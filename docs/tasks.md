@@ -2,6 +2,14 @@
 
 Key: BUG, FEAT (new feature), DEBT (technical debt), SEC (security issue)
 
+- DEBT 1 FIREFOX: I think we might need to use a proper, signed extension in order for the devtools to be able to see into the addon or its popup frame
+
+- BUG 1 FIREFOX: Inconsolata not being loaded or rendered; Courier New looks like absolute shit
+
+- BUG 1 FIREFOX: Can't scroll vertically within the popup
+
+- BUG 1 FIREFOX: Every request to the Mane server except the matchers list is getting a CORS error - server doesn't support PUT operation?
+
 - SEC 1: any foreign page can request anything from the patch server
 
 - BUG 1: cache keeps showing patch unless ALL assets are deleted
@@ -15,6 +23,14 @@ Key: BUG, FEAT (new feature), DEBT (technical debt), SEC (security issue)
 - BUG 1: changing cache.patches at all fucks up because getAllPatches doesn't check for diffs before using caches
 
 
+
+- BUG 2 FIREFOX: Must set min-height manually to get the popup to show at all; appears to also be setting max-height?
+
+- DEBT 2: build process for 
+	1. packaged extensions and
+	2. packaged native executables
+
+- DEBT 2: serious test coverage
 
 - SEC 2: pages can read the contents of patches inserted into the page dom. fix: run patches in/as content scripts
 
@@ -92,6 +108,11 @@ Key: BUG, FEAT (new feature), DEBT (technical debt), SEC (security issue)
 - FEAT 3: save the urls / metadata of remote patches as a JSON file
 	- MUST forewarn users of danger of remote patches
 
+
+
+## release checklist
+
+- revise the manifest; remove extension-management perms
 
 
 ## security/trust

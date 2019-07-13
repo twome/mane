@@ -10,21 +10,29 @@
 
 ---
 
+![Mane screenshot on macOS](./docs/2019-06-22_mane-screenshot.png)
+
 Mane is a native menubar / system tray app and browser extension which automatically inserts modifications (JavaScript and CSS) into certain websites whenever you visit them. These "patches" are stored in a folder on your hard drive or a remote Git repository (WIP), so you can use patches made by other people and keep them in your cloud files with no fuss or accounts necessary. Hide sticky headers, add keyboard shortcuts to music players, improve hideous colour palettes, or cut out annoyances which adblockers miss because they aren't technically ads – jury-rig any part of the web to your liking!
 
 This is similar in approach to [GreaseMonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)/[TamperMonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo), and '[User Javascript & CSS](https://chrome.google.com/webstore/detail/user-javascript-and-css/nbhcbdghjpllgmfilhnhkllmkecfmpld)' on Chrome, but with an emphasis on a simple & nice user interface, and being able to edit and store patches in whatever way suits you (instead of weird custom editors and databases).
 
-## Installation & usage
+## Installation
+
+You need to run the server AND the extension.
 
 #### Server (to read and write patches as files)
 
+Either:
+
 **CLI**: Clone this repo, then, from the command line, `cd` into it, run `yarn install` to fetch dependencies, & then `yarn start-cli` to start the Node server on `localhost:1917` by default.
+
+**OR**
 
 **macOS Electron app**: Run `yarn native` to launch the GUI app. It will briefly appear in the Dock, then move to the menubar/tray. No pre-packaged executables are ready yet, sorry!
 
 #### Browser extension (to inject patches into webpages) 
 
-Turn on 'developer/debug mode' in your browser's extension manager, then load this repo's `src/extension/` folder as an "unpacked extension" or similar.
+Turn on 'developer/debug mode' in your browser's extension manager, then load this repo's `src/extension/` folder as an "unpacked extension" (the terminology may vary).
 
 [Properly packaged extension files & browser extension store links will come soon.]
 
