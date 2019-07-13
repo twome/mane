@@ -53,8 +53,9 @@ let patches
 try {
 	patches = await getMatchingPatches(location.href)
 } catch(err){
-	console.error(`Couldn't fetch patches from the Mane app serving at ${cfg.maneServerHost}; did you forget to start it?`, err)
-	patches = [] // Act as if we simply got an empty response
+	// Couldn't fetch patches from the Mane app serving at ${cfg.maneServerHost}; did you forget to start it?
+	patches = [] // Act as if we simply got an empty response; do nothing
+	return
 }
 
 for (let patch of patches){
