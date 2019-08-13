@@ -78,6 +78,13 @@ body {
 	line-height: 1.5;
 
 	min-width: 300px; /* Just a little more room to breathe than the bare minimum */
+
+	/* HACK */
+	/*
+		On Firefox, the popup panel glitches and sets random heights each time you open it unless you set a min-height.
+		TODO: Find some way to make the panel expand to fit its contents.
+	*/
+	min-height: 200px;
 }
 
 input {
@@ -324,7 +331,6 @@ kbd {
 .ActivePatches {
 	background-color: hsla(29, 100%, 6%, 1);
 	color: white;
-	flex-grow: 1;
 }
 
 .ActivePatches_list {
