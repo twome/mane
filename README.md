@@ -103,9 +103,9 @@ The app should cache an index file of the locations of assets for all matchers f
 
 ## We use the work of:
 
-Icons made by <div><a href="https://www.flaticon.com/authors/google" title="Google">Google</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+Icons made by Google from www.flaticon.com is licensed by: `CC 3.0 BY`
 
-<a href="https://icons8.com/windows-icons">Windows icons by Icons8</a>
+[https://icons8.com/windows-icons](Windows icons by Icons8)
 
 ## License
 
