@@ -20,7 +20,7 @@
     "build-production": "NODE_ENV=production node -r esm build.js"
   },
   "devDependencies": {
-    "axios": "^0.18.1",
+    "axios": "^0.21.1",
     "chai": "^4.2.0",
     "eslint": "^5.16.0",
     "mocha": "^6.0.2",
